@@ -140,6 +140,22 @@
     window.addEventListener("hashchange", openFromHash);
     openFromHash();
 
+    // Sections fade in as they scroll into view; without IntersectionObserver they simply stay visible
+    if ("IntersectionObserver" in window) {
+        const revealer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add("is-visible");
+                revealer.unobserve(entry.target);
+            });
+        }, { rootMargin: "0px 0px -10% 0px" });
+
+        document.querySelectorAll(".section").forEach(section => {
+            section.classList.add("reveal");
+            revealer.observe(section);
+        });
+    }
+
     // Copy the main contact address
     document.querySelectorAll(".copy-email").forEach(button => {
         button.addEventListener("click", async () => {

@@ -14,9 +14,13 @@
     <title>abdennour kerboua</title>
     <link rel="icon" type="image/png" href="assets/kanagawa-wave.png?v=20260821a">
     <script>
+        document.documentElement.classList.add("js");
         try { var t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
     </script>
-    <link rel="stylesheet" href="minimal.css?v=20260831a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="minimal.css?v=20260831b">
 </head>
 <body>
     <nav class="jump-nav" aria-label="Sections">
@@ -232,6 +236,10 @@
         <h2 id="molecular-title">Molecular Graph Captioning</h2>
         <p>Graph convolutional networks, SciBERT and contrastive learning for molecular graph and scientific-text alignment.</p>
         <a class="modal-link modal-link-detail" href="portfolio-projects/molecular-graph-captioning/index.html">Lire le détail ↗</a>
+        <figure class="project-sample">
+            <img src="portfolio-projects/molecular-graph-captioning/assets/contrastive-pipeline.png" alt="Contrastive retrieval pipeline: align text and graph embeddings, then retrieve the closest description" width="970" height="502" loading="lazy">
+            <figcaption>Contrastive (CLIP-style) retrieval pipeline for molecule descriptions.</figcaption>
+        </figure>
         <a class="modal-link" href="https://github.com/AbdennourKerPro/altegrad-challenge" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </dialog>
 

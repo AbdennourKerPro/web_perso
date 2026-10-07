@@ -752,17 +752,20 @@ section[id] { scroll-margin-top: 3.5rem; }
 .masthead {
     position: relative;
     isolation: isolate;
+    overflow: hidden;
 }
 
 .masthead::before {
     content: "";
     position: absolute;
-    top: -1rem;
+    top: 0;
     right: -2rem;
     z-index: -1;
     width: 17rem;
     height: 17rem;
     background: url("assets/kanagawa-wave.png") center / contain no-repeat;
+    -webkit-mask-image: radial-gradient(closest-side, #000 40%, transparent 100%);
+    mask-image: radial-gradient(closest-side, #000 40%, transparent 100%);
     filter: grayscale(1);
     opacity: 0.09;
     pointer-events: none;

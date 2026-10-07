@@ -10,6 +10,19 @@
         });
     });
 
+    document.querySelectorAll(".copy-email").forEach(button => {
+        button.addEventListener("click", async () => {
+            const label = button.textContent;
+            try {
+                await navigator.clipboard.writeText(button.dataset.copy);
+                button.textContent = "copié";
+            } catch (error) {
+                button.textContent = "erreur";
+            }
+            setTimeout(() => { button.textContent = label; }, 1500);
+        });
+    });
+
     document.querySelectorAll(".project-modal").forEach(dialog => {
         dialog.querySelector(".modal-close")?.addEventListener("click", () => dialog.close());
 

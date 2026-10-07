@@ -524,3 +524,38 @@ button:focus-visible {
         animation-iteration-count: 1 !important;
     }
 }
+
+/* Priority 1 polish: project cards advertise their details window */
+.project-trigger {
+    padding: 0.75rem;
+    margin: -0.75rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.project-trigger:hover { background: var(--surface); }
+
+.project-trigger::after {
+    content: "détails →";
+    display: block;
+    margin-top: 0.75rem;
+    color: var(--faint);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+}
+
+.copy-email {
+    margin-left: 0.35rem;
+    padding: 0 0.4rem;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    cursor: pointer;
+}
+
+.copy-email:hover { color: var(--ink); border-color: var(--olive); }
+
+.modal-link-detail { margin-right: 1.25rem; color: var(--muted); }

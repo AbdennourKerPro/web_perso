@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Evidentia is a local, evidence-first RAG assistant for querying and comparing scientific papers.">
+  <meta property="og:title" content="Evidentia | Abdennour Kerboua">
+  <meta property="og:description" content="A local agentic RAG assistant for grounded, traceable scientific literature review.">
+  <title>Evidentia | Abdennour Kerboua</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../style.css?v=20260722d">
+  <script>document.documentElement.setAttribute('data-theme', 'light');</script>
+  <style>
+    .evidentia{--violet:#7c3aed;--cyan:#0891b2;--green:#159a6b;--line:var(--border-color);--panel:var(--bg-secondary);--muted:var(--text-medium)}
+    .evidentia .kicker{margin:0 0 .7rem;color:var(--violet);font-size:.78rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+    .evidentia .subtitle{max-width:850px;margin:0;color:var(--muted);font-size:clamp(1.04rem,2vw,1.22rem);line-height:1.65}
+    .evidentia .meta{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;margin:1rem 0;color:var(--muted);font-size:.92rem}
+    .evidentia .status{display:inline-flex;align-items:center;gap:.45rem;padding:.42rem .75rem;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--green) 10%,transparent);font-size:.82rem;font-weight:700}
+    .evidentia .status::before{width:.52rem;height:.52rem;border-radius:50%;background:var(--green);content:""}
+    .evidentia .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin:1.6rem 0 2rem}
+    .evidentia .metric,.evidentia .card{padding:1rem;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+    .evidentia .metric{background:linear-gradient(145deg,var(--surface),var(--panel))}
+    .evidentia .value{display:block;margin-bottom:.35rem;color:var(--violet);font-size:clamp(1.6rem,4vw,2.15rem);font-weight:850;letter-spacing:-.05em}
+    .evidentia .label{color:var(--muted);font-size:.82rem;line-height:1.38}
+    .evidentia .toc{position:sticky;top:calc(var(--nav-height) + .65rem);z-index:900;display:block;min-height:0;margin:2rem 0;padding:1.2rem 1.35rem;border:1px solid var(--line);border-radius:18px;background:color-mix(in srgb,var(--panel) 96%,transparent);box-shadow:0 12px 30px color-mix(in srgb,var(--bg-color) 55%,transparent)}
+    .evidentia .toc h2{margin-top:0;font-size:1rem}.evidentia .toc ul{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem 1.2rem;margin-bottom:0;padding-left:1.1rem}.evidentia .toc a{color:var(--violet);text-decoration:none}.evidentia .toc a:hover{text-decoration:underline}
+    .evidentia .content>h2{margin-top:3rem;scroll-margin-top:calc(var(--nav-height) + 10rem)}.evidentia .content p,.evidentia .content li{line-height:1.72}
+    .evidentia .callout{margin:1.5rem 0;padding:1.1rem 1.2rem;border:1px solid var(--line);border-left:3px solid var(--violet);border-radius:14px;background:color-mix(in srgb,var(--violet) 8%,transparent);line-height:1.65}
+    .evidentia .callout.caution{border-left-color:#d97706;background:color-mix(in srgb,#d97706 9%,transparent)}
+    .evidentia .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:1.5rem 0;padding:0;list-style:none;counter-reset:flow}
+    .evidentia .flow li{min-height:150px;padding:1rem;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+    .evidentia .flow li::before{display:block;margin-bottom:.6rem;color:var(--violet);content:"0" counter(flow);counter-increment:flow;font-size:.8rem;font-weight:800;letter-spacing:.1em}
+    .evidentia .flow strong{display:block;margin-bottom:.35rem}.evidentia .flow span{color:var(--muted);font-size:.88rem;line-height:1.48}
+    .evidentia .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.25rem 0}.evidentia .card h3{margin-top:0}.evidentia .eyebrow{display:block;margin-bottom:.4rem;color:var(--cyan);font-size:.73rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.evidentia .question{padding:.85rem .95rem;border-radius:12px;background:var(--panel);font-style:italic}
+    .evidentia .actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:3rem}.evidentia .github-btn{display:inline-flex;align-items:center;justify-content:center}
+    @media(max-width:800px){.evidentia .stats,.evidentia .flow{grid-template-columns:repeat(2,1fr)}.evidentia .grid,.evidentia .toc ul{grid-template-columns:1fr}}@media(max-width:520px){.evidentia .stats,.evidentia .flow{grid-template-columns:1fr}.evidentia .flow li{min-height:auto}.evidentia .toc{top:calc(var(--nav-height) + .4rem)}.evidentia .content>h2{scroll-margin-top:calc(var(--nav-height) + 16rem)}}
+  </style>
+  <link rel="stylesheet" href="../../project-minimal.css?v=20260821b">
+</head>
+<body>
+  <nav>
+    <a href="../../index.html" class="logo">Abdennour Kerboua</a>
+    <div class="nav-links"><a href="../../index.html#work">work</a><a href="../../index.html#education">education</a><a href="../../index.html#experience">experience</a><a href="../../index.html#links">links</a></div>
+  </nav>
+  <main class="container evidentia">
+    <article class="project-detail">
+      <header class="project-header">
+        <p class="kicker">LLM · RAG · Agentic Systems · Final Evaluation</p>
+        <h1>Evidentia</h1>
+        <p class="subtitle">A local scientific reading assistant that answers and compares arXiv papers using only retrieved, cited and inspectable evidence.</p>
+        <div class="tags"><span class="tag">LangGraph</span><span class="tag">Qdrant</span><span class="tag">FastAPI</span><span class="tag">OpenVINO</span><span class="tag">Docker</span></div>
+        <p class="meta"><span><strong>Use case:</strong> literature review, comparison and evidence checking</span><span><strong>Execution:</strong> local, modest CPU/GPU</span><span><strong>Year:</strong> 2026</span></p>
+        <span class="status">Final v6 evaluation complete: 30 benchmark cases, all abstentions handled correctly</span>
+      </header>
+
+      <section class="stats" aria-label="Final evaluation results">
+        <div class="metric"><span class="value">29/30</span><span class="label">End-to-end answers passed, or 96.7%.</span></div>
+        <div class="metric"><span class="value">100%</span><span class="label">Expected-document retrieval recall.</span></div>
+        <div class="metric"><span class="value">100%</span><span class="label">Citation precision and recall.</span></div>
+        <div class="metric"><span class="value">86.1%</span><span class="label">Mean factual coverage across answerable cases.</span></div>
+        <div class="metric"><span class="value">56.5 s</span><span class="label">Mean latency per question on local CPU.</span></div>
+      </section>
+
+      <nav class="toc" aria-label="Contents">
+        <h2>Contents</h2>
+        <ul><li><a href="#goal">1. Goal</a></li><li><a href="#pipeline">2. Pipeline</a></li><li><a href="#usage">3. Usage examples</a></li><li><a href="#guardrails">4. Guardrails</a></li><li><a href="#next">5. Next steps</a></li></ul>
+      </nav>
+
+      <section class="content">
+        <h2 id="goal">1. Evidence-first scientific RAG</h2>
+        <p>Scientific assistants can produce a convincing answer without making its support easy to verify. Evidentia takes the opposite approach: every answer is built from evidence present in the selected corpus, linked to citations, and backed by the exact chunks supplied to the model.</p>
+        <div class="callout"><strong>Product question.</strong> How can a student, researcher or engineer interrogate several publications without losing factual attribution, especially when comparing methods, training objectives or architectural components?</div>
+        <p>The current prototype focuses on a curated set of computer-vision papers. Its interface lets users select sources, ask in English or French, and inspect retrieval, generation, citations and any abstention decision.</p>
+
+        <h2 id="pipeline">2. Local agentic pipeline</h2>
+        <ol class="flow">
+          <li><strong>Ingestion</strong><span>arXiv PDFs are extracted with Docling and split into usable evidence passages.</span></li>
+          <li><strong>Retrieval</strong><span>Multilingual E5 embeddings in Qdrant, BM25 and reciprocal-rank fusion retrieve candidate evidence.</span></li>
+          <li><strong>Orchestration</strong><span>LangGraph analyses the question, creates intent-specific facets and balances sources in comparisons.</span></li>
+          <li><strong>Controlled answer</strong><span>Qwen 2.5 7B, quantized with OpenVINO, writes locally while a contract checks language, citations and facts.</span></li>
+        </ol>
+        <div class="grid">
+          <article class="card"><h3>Hybrid, multi-facet retrieval</h3><p>For a complex question, the system combines dense and lexical retrieval, fuses rankings, then reranks evidence according to the detected intent: supervision, architecture, data, frozen components or comparison.</p></article>
+          <article class="card"><h3>Fact planning and response contract</h3><p>After evidence selection, a deterministic fact plan identifies what must be covered and which sources may support it. A response contract checks language, citation validity and factual completeness, with at most one corrective pass.</p></article>
+        </div>
+
+        <h2 id="usage">3. Usage examples</h2>
+        <div class="grid">
+          <article class="card">
+            <span class="eyebrow">Understand a method</span><h3>BLIP-2’s Q-Former</h3>
+            <p class="question">“Why is BLIP-2’s Q-Former described as an information bottleneck between vision and the LLM?”</p>
+            <p>Evidentia retrieves the relevant BLIP-2 passages, then explains how learnable queries extract useful visual information from a frozen image encoder before passing it to a frozen language model. The cited passages expose the architecture behind the answer.</p>
+          </article>
+          <article class="card">
+            <span class="eyebrow">Compare papers</span><h3>CLIP and DINOv2</h3>
+            <p class="question">“Compare the training objectives of CLIP and DINOv2.”</p>
+            <p>The graph creates a balanced retrieval path per source, preventing CLIP’s contrastive objective from being attributed to DINOv2. The final answer separates CLIP’s image-text pairs from DINOv2’s teacher-student self-supervision.</p>
+          </article>
+        </div>
+        <h3>What the interface makes inspectable</h3>
+        <ul><li>the selected papers and the chunks actually passed to the model;</li><li>citations with their source page and section;</li><li>the LangGraph trace: retrieval strategy, intent, fact plan, correction and contract status;</li><li>an explicit abstention when the available evidence is insufficient.</li></ul>
+
+        <h2 id="guardrails">4. From failure modes to guardrails</h2>
+        <p>The final benchmark’s remaining hard case asked how the LVD-142M dataset is curated without text metadata. The relevant paper was retrieved, yet the answer covered only part of the required mechanism. This distinction matters: finding the right paper is not enough if the decisive passage or detail is not carried into the answer.</p>
+        <div class="grid">
+          <article class="card"><h3>Select the decisive evidence</h3><p>A relevant citation does not guarantee that the selected passage contains the requested mechanism, number or component. Query facets, dense and lexical fusion, and intent-guided reranking focus the context on evidence that answers every part of the question.</p></article>
+          <article class="card"><h3>Prefer transparency to a plausible answer</h3><p>The fact plan links each expected element to its authorized sources. The contract checks language, citations and completeness; when a blocking constraint fails, the system abstains explicitly instead of presenting an unsupported answer as certain.</p></article>
+        </div>
+        <p>Separating retrieval, writing and validation makes system behavior inspectable. Users can tell apart missing evidence, an incomplete answer and a refusal triggered by the response contract.</p>
+        <div class="callout caution"><strong>Evaluation scope.</strong> Factual coverage is based on explicit term groups. This makes campaigns reproducible, but a human review remains necessary to judge scientific fidelity in nuanced answers.</div>
+
+        <h2 id="next">5. Next steps</h2>
+        <p>The next objective is to broaden the available evidence while preserving the same traceability: scientific figures and tables, followed by calibrated human evaluation on the most demanding answers.</p>
+        <ul><li><strong>Extend to scientific figures</strong> with a VLM that can connect text, tables, charts and images.</li><li><strong>Add structured human review</strong> to complement deterministic attribution and factual-coverage metrics.</li><li><strong>Explore SFT and preference alignment</strong> once evaluation criteria and retrieval are stable.</li></ul>
+      </section>
+
+      <div class="actions"><a href="https://github.com/AbdennourKerPro/evidentia" target="_blank" rel="noopener" class="github-btn">View source on GitHub</a><a href="../../portfolio.html" class="back-to-portfolio">&larr; Back to portfolio</a></div>
+    </article>
+  </main>
+  <footer><p>&copy; 2026 Abdennour Kerboua.</p></footer>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="../../firebase-config.js?v=20260722d"></script>
+  <script src="../../data.js?v=20260816a"></script>
+  <script src="../../script.js?v=20260722d"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCSN & DDPM : les modèles de diffusion, de la théorie à l'imagerie médicale | Abdennour Kerboua</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../../note-minimal.css?v=20260821e">
+</head>
+<body>
+
+    <nav><a href="../../index.html" class="logo">ak.</a><div class="nav-links"><a href="../../index.html">home</a><a href="../../index.html#notes">notes</a><a href="../../index.html#links">links</a></div></nav>
+
+    <article class="blog-post-container">
+        <header class="blog-header">
+            <h1 class="article-title">NCSN & DDPM : des Score-Based Models à la génération d'images médicales</h1>
+            <div class="author-meta">
+                <div class="meta-text">
+                    <span class="author-name">Abdennour Kerboua</span>
+                    <span class="post-date">16 Juil 2026 · 14 min de lecture</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="article-content">
+            <p>Les modèles de diffusion se sont imposés comme la nouvelle référence de la génération d'images, dépassant les GANs sur de nombreux benchmarks. Deux familles de travaux ont posé les fondations de ce paradigme : les <strong>Noise Conditional Score Networks (NCSN)</strong> de Song &amp; Ermon, qui apprennent le gradient du log de la densité des données (le "score") à différents niveaux de bruit, et les <strong>Denoising Diffusion Probabilistic Models (DDPM)</strong> de Ho, Jain &amp; Abbeel, qui reformulent la diffusion comme un modèle probabiliste à variables latentes entraîné par une simple régression de bruit. Ces deux formulations sont en réalité deux faces d'une même pièce : NCSN estime le score \(\nabla_x \log p(x)\) tandis que DDPM estime le bruit \(\varepsilon\), et les deux quantités sont liées par une simple mise à l'échelle.</p>
+            <p>Dans cet article, j'implémente et j'analyse un DDPM "from scratch" (projet réalisé avec Daniel Akbarinia dans le cadre du cours Deep Learning du Master MVA), avant d'étudier sa capacité de généralisation, de construire un algorithme d'inpainting maison, une variante conditionnelle par classe, et enfin de l'appliquer à un cas d'usage réaliste : la génération d'images histologiques sur <strong>PathMNIST</strong>, un sous-ensemble médical de MedMNIST.</p>
+
+            <hr class="separator">
+
+            <h2>1. Des scores de Song & Ermon au bruit de Ho et al.</h2>
+            <p>L'idée commune aux modèles de diffusion est de détruire progressivement la structure des données par un bruitage successif, puis d'apprendre à inverser ce processus. Les NCSN entraînent un réseau \(s_\theta(x, \sigma)\) à estimer le score \(\nabla_x \log p_\sigma(x)\) pour une famille de niveaux de bruit \(\sigma\), via du <em>score matching</em> débruitant, puis génèrent des échantillons par <em>Langevin dynamics</em>. Les DDPM, eux, formalisent le même principe comme un modèle à variables latentes \(x_1, \dots, x_T\) muni de deux chaînes de Markov duales : un processus <strong>direct</strong> fixe qui ajoute du bruit gaussien, et un processus <strong>inverse</strong> appris qui reconstruit le signal. C'est cette seconde formulation, plus simple à entraîner et à analyser, que nous détaillons et implémentons ici.</p>
+
+            <h2 id="forward-reverse">2. Processus direct et inverse</h2>
+            <h3>Le processus de diffusion direct</h3>
+            <p>Le processus direct est une chaîne de Markov qui ajoute progressivement du bruit gaussien à un échantillon \(x_0 \sim p_{\text{data}}\), selon un schéma de variance \(\beta_1, \dots, \beta_T\) :</p>
+
+            $$ q(x_t \mid x_{t-1}) = \mathcal{N}\left(x_t; \sqrt{1-\beta_t}\, x_{t-1}, \beta_t I\right). $$
+
+            <p>Une propriété clé de cette formulation est de pouvoir échantillonner \(x_t\) à n'importe quel instant \(t\) directement, sans itérer sur les étapes intermédiaires. En posant \(\alpha_t = 1-\beta_t\) et \(\bar{\alpha}_t = \prod_{s=1}^t \alpha_s\), on montre que :</p>
+
+            $$ q(x_t \mid x_0) = \mathcal{N}\left(x_t; \sqrt{\bar{\alpha}_t}\, x_0, (1-\bar{\alpha}_t) I\right). $$
+
+            <p>Grâce à l'astuce de reparamétrisation, on peut donc écrire \(x_t\) comme une combinaison linéaire du signal et d'un bruit gaussien standard :</p>
+
+            $$ x_t = \sqrt{\bar{\alpha}_t}\, x_0 + \sqrt{1-\bar{\alpha}_t}\, \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, I). $$
+
+            <p>Quand \(t\) tend vers \(T\), \(\bar{\alpha}_T \to 0\), si bien que \(q(x_T)\) converge vers une gaussienne isotrope \(\mathcal{N}(0, I)\) : toute la structure de l'image a été détruite.</p>
+
+            <h3>Le processus génératif inverse</h3>
+            <p>Le modèle génératif inverse ce processus : partant d'un bruit pur \(x_T \sim \mathcal{N}(0, I)\), on échantillonne la distribution des données en débruitant séquentiellement. Ce processus inverse est une chaîne de Markov à paramètres apprenables \(\theta\) :</p>
+
+            $$ p_\theta(x_{0:T}) = p(x_T) \prod_{t=1}^{T} p_\theta(x_{t-1} \mid x_t). $$
+
+            <p>Pour des pas de diffusion \(\beta_t\) suffisamment petits, chaque transition inverse peut être approximée par une gaussienne :</p>
+
+            $$ p_\theta(x_{t-1} \mid x_t) = \mathcal{N}\left(x_{t-1}; \mu_\theta(x_t, t), \sigma_t^2 I\right), $$
+
+            <p>où la variance \(\sigma_t^2\) est généralement fixée (à \(\beta_t\) ou un schéma proche), et où la moyenne \(\mu_\theta(x_t, t)\) est la quantité principale prédite par le réseau de neurones.</p>
+
+            <h2 id="elbo">3. Fonction de vraisemblance et borne variationnelle</h2>
+            <p>Entraîner un DDPM revient à maximiser la vraisemblance des données, ou de façon équivalente, à minimiser \(-\log p_\theta(x_0)\). Cette quantité étant intraitable (elle nécessite d'intégrer sur toutes les trajectoires latentes possibles), on minimise à la place une borne variationnelle supérieure classique (ELBO) :</p>
+
+            $$ -\log p_\theta(x_0) \le \mathcal{L}_{\text{ELBO}}(\theta) = \mathbb{E}_q\left[-\log p_\theta(x_{0:T}) + \log q(x_{1:T} \mid x_0)\right]. $$
+
+            <p>En développant les termes des distributions jointes via la propriété de Markov, cet objectif se réécrit comme une somme de divergences de Kullback-Leibler (KL), révélant trois composantes distinctes :</p>
+
+            $$ \mathcal{L}_{\text{ELBO}} = \mathbb{E}_q\Big[\underbrace{\text{KL}\big(q(x_T \mid x_0) \,\|\, p(x_T)\big)}_{L_T:\ \text{Prior Matching}} + \sum_{t=2}^{T}\underbrace{\text{KL}\big(q(x_{t-1} \mid x_t, x_0) \,\|\, p_\theta(x_{t-1} \mid x_t)\big)}_{L_{t-1}:\ \text{cohérence du débruitage}} \underbrace{-\log p_\theta(x_0 \mid x_1)}_{L_0:\ \text{reconstruction}}\Big]. $$
+
+            <h2 id="parametrisation">4. Paramétrisation et objectif de débruitage simplifié</h2>
+            <p>Le point clé de DDPM est de faire correspondre la paramétrisation de la transition inverse apprise à la <em>postérieure directe</em> tractable \(q(x_{t-1} \mid x_t, x_0)\), qui est elle-même gaussienne \(\mathcal{N}(\tilde{\mu}_t, \tilde{\beta}_t I)\), de moyenne :</p>
+
+            $$ \tilde{\mu}_t(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\varepsilon\right), \quad \text{où } x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\,\varepsilon. $$
+
+            <p>Plutôt que de prédire directement la moyenne, on demande donc au réseau de prédire le <strong>bruit</strong> \(\varepsilon_\theta(x_t, t)\) :</p>
+
+            $$ \mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\varepsilon_\theta(x_t, t)\right). $$
+
+            <p>En substituant cette paramétrisation dans le terme de divergence KL de l'ELBO, l'objectif se simplifie en une erreur quadratique moyenne pondérée entre le bruit réel \(\varepsilon\) et le bruit prédit \(\varepsilon_\theta\) :</p>
+
+            $$ \text{KL}\big(q(x_{t-1}|x_t,x_0)\,\|\,p_\theta(x_{t-1}|x_t)\big) = \mathbb{E}_{x_0,\varepsilon}\left[\frac{\beta_t^2}{2\sigma_t^2\alpha_t(1-\bar{\alpha}_t)}\left\|\varepsilon - \varepsilon_\theta\big(\sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\varepsilon,\, t\big)\right\|^2\right]. $$
+
+            <p>En pratique, suivant les résultats empiriques de Ho et al., on fixe \(\sigma_t^2 = \beta_t\) et on supprime le facteur de pondération, ce qui donne l'<strong>objectif simplifié</strong> utilisé pour l'entraînement :</p>
+
+            $$ \mathcal{L}_{\text{simple}}(\theta) = \mathbb{E}_{t, x_0, \varepsilon}\left[\|\varepsilon - \varepsilon_\theta(x_t, t)\|^2\right]. $$
+
+            <p>Cette formulation entraîne directement le modèle à prédire le bruit responsable de la corruption de l'échantillon à l'étape \(t\) — une simple régression, stable et facile à optimiser sur des données de haute dimension.</p>
+
+            <h2 id="sampling">5. Échantillonnage</h2>
+            <p>L'algorithme de génération part d'un bruit pur \(x_T \sim \mathcal{N}(0, I)\) et itère de \(T\) à \(1\) pour débruiter progressivement l'image, en réinjectant à chaque étape un bruit stochastique \(z\) (sauf à la toute dernière étape) afin d'échantillonner réellement \(p_\theta(x_{t-1}\mid x_t)\) plutôt que d'en estimer seulement la moyenne :</p>
+
+            <pre><code class="language-python">
+# Algorithme 1 : Sampling
+x_t = sample_gaussian()          # x_T ~ N(0, I)
+for t in reversed(range(1, T+1)):
+    z = sample_gaussian() if t > 1 else 0
+    eps_pred = eps_theta(x_t, t)
+    x_t = (1 / sqrt(alpha[t])) * (
+        x_t - (1 - alpha[t]) / sqrt(1 - alpha_bar[t]) * eps_pred
+    ) + sigma[t] * z
+return x_t  # x_0
+            </code></pre>
+
+            <hr class="separator">
+
+            <h2 id="architecture">6. Architecture et configuration expérimentale</h2>
+            <p>Nous avons implémenté un <strong>U-Net</strong> avec plusieurs modifications architecturales visant à améliorer l'expressivité et la vitesse de convergence par rapport à une implémentation de base :</p>
+            <ul>
+                <li><strong>Backbone ConvNeXt</strong> : remplacement des blocs ResNet classiques par des blocs ConvNeXt (convolutions depthwise, activations GELU au lieu de SiLU), avec un doublement du nombre de blocs résiduels à chaque niveau de résolution.</li>
+                <li><strong>Contexte global par attention</strong> : un module résiduel PreNorm + Self-Attention est ajouté à la fin de chaque niveau de résolution, pour combiner la génération de texture locale (convolutions) avec la cohérence sémantique globale (attention).</li>
+            </ul>
+            <p>Côté configuration du processus de diffusion : <strong>\(T = 300\)</strong> pas de diffusion (compromis qualité / coût de calcul) et un <strong>schéma de variance linéaire</strong>, la variance du bruit croissant linéairement de \(\beta_1 = 10^{-4}\) à \(\beta_T = 2\times10^{-2}\).</p>
+
+            <h2 id="ablation">7. Influence du nombre de pas de bruitage</h2>
+            <p>Pour évaluer la sensibilité du modèle à la résolution temporelle du processus de diffusion, nous avons entraîné des modèles distincts sur MNIST avec \(T \in \{100, 300, 500, 1000, 2000\}\), à schéma de variance linéaire fixé.</p>
+            <ul>
+                <li><strong>Peu de pas (\(T \le 300\))</strong> : le modèle peine à restituer les détails fins ; les échantillons générés apparaissent flous ou bruités, signe que le processus inverse ne parvient pas à reconstruire complètement la distribution des données à partir du prior.</li>
+                <li><strong>Beaucoup de pas (\(T \ge 1000\))</strong> : des images progressivement plus nettes, avec des textures réalistes et moins d'artefacts.</li>
+            </ul>
+            <p>Ce phénomène s'explique par la discrétisation du processus de diffusion continu : l'hypothèse de transition inverse gaussienne repose sur des pas infinitésimaux. Un petit \(T\) crée de grands écarts de bruit entre états consécutifs, ce qui complique la tâche de débruitage. À l'inverse, augmenter \(T\) réduit les valeurs de \(\beta_t\) et lisse la trajectoire latente, simplifiant la tâche de régression du réseau à chaque étape.</p>
+
+            <h2 id="generalization">8. Le DDPM mémorise-t-il, ou généralise-t-il ?</h2>
+            <p>Pour déterminer si un DDPM apprend la véritable distribution des données ou se contente de mémoriser les échantillons d'entraînement, nous avons entraîné deux modèles indépendants sur des sous-ensembles disjoints \((S_1, S_2)\) du même dataset (MNIST et CelebA), en faisant varier la taille du sous-ensemble \(N\) de 1 à \(10^5\), et en générant des échantillons à partir des <strong>mêmes</strong> vecteurs de bruit initiaux \(x_T\) pour les deux modèles.</p>
+            <p>Trois régimes distincts émergent :</p>
+            <ul>
+                <li><strong>Mémorisation (\(N \le 100\))</strong> : les deux modèles produisent des sorties différentes qui reproduisent des échantillons de leur propre sous-ensemble d'entraînement — un signe fort de sur-apprentissage.</li>
+                <li><strong>Généralisation (\(N = 10^5\))</strong> : les deux modèles génèrent des images quasiment indiscernables à partir du même bruit, et qui ne ressemblent à aucun exemple d'entraînement spécifique. Cette convergence confirme que les modèles ont appris la variété sous-jacente des données plutôt que mémorisé le sous-ensemble.</li>
+            </ul>
+            <p>Pour quantifier cette évolution, nous avons mesuré des distances cosinus : quand \(N\) augmente, la distance entre les échantillons générés par les deux modèles indépendants diminue (variance du modèle qui s'annule), tandis que la distance entre les échantillons générés et leurs plus proches voisins d'entraînement augmente. Ce basculement confirme qu'à mesure que le volume de données croît, le modèle s'éloigne de la pure mémorisation pour apprendre à synthétiser des échantillons réellement nouveaux.</p>
+
+            <h2 id="inpainting">9. Inpainting avec un DDPM</h2>
+            <p>Nous avons conçu un algorithme d'inpainting en modifiant directement la boucle de diffusion inverse standard. À chaque étape \(t\), la méthode réécrit explicitement les régions connues de l'état latent (définies par un masque binaire \(m\)) avec la vérité terrain bruitée correspondante \(x_t^{\text{known}}\). Cette intervention force le modèle à générer un contenu dans les zones masquées qui reste sémantiquement cohérent avec le contexte fixé, tout au long de la trajectoire de débruitage :</p>
+
+            <pre><code class="language-python">
+# Algorithme 2 : Boucle d'inpainting
+# Input: masque m, référence x0, bruit x_T
+x_t = x_T
+for t in reversed(range(1, T+1)):
+    eps = sample_gaussian()
+    x_known_t = sqrt(alpha_bar[t]) * x0 + sqrt(1 - alpha_bar[t]) * eps
+
+    # on impose les pixels connus
+    x_t = (1 - m) * x_known_t + m * x_t
+
+    z = sample_gaussian() if t > 1 else 0
+    eps_pred = eps_theta(x_t, t)
+    x_t = (1 / sqrt(alpha[t])) * (
+        x_t - (1 - alpha[t]) / sqrt(1 - alpha_bar[t]) * eps_pred
+    ) + sigma[t] * z
+return x_t  # x0 inpainted
+            </code></pre>
+
+            <p>Sur CelebA, ce comportement produit parfois des résultats amusants : pour certains visages masqués sur les yeux avec un ciel bleu en arrière-plan, le modèle "invente" des lunettes de soleil à partir du contexte, mais ne peut pas en dessiner les branches puisque les pixels non masqués restent inchangés.</p>
+
+            <h2 id="conditional">10. DDPM conditionnel</h2>
+            <p>Pour permettre une synthèse conditionnelle, nous avons modifié l'architecture U-Net pour qu'elle accepte un label de classe \(y\) en entrée. Ce label est d'abord projeté dans un vecteur dense via une couche d'embedding apprenable. Pour que l'information de classe guide efficacement la génération à toutes les échelles, cet embedding est injecté à <strong>chaque étage</strong> du réseau : il est additionné à l'embedding temporel au sein de chaque bloc résiduel, conditionnant les cartes de features à chaque résolution. Sur MNIST, cela permet de générer des chiffres spécifiques à la demande, avec une cohérence visuelle proche des exemples réels les plus proches.</p>
+
+            <h2 id="medical">11. Application à l'imagerie médicale : PathMNIST</h2>
+            <p>La disponibilité de données médicales diversifiées reste aujourd'hui un frein majeur au développement de modèles robustes en imagerie médicale. Pour évaluer l'intérêt des modèles de diffusion dans ce contexte, nous avons étendu notre évaluation au dataset <strong>PathMNIST</strong>, qui contient des lames d'histologie de cancer colorectal au format 28×28 RGB.</p>
+            <p>Le DDPM entraîné sur PathMNIST parvient à capturer les textures biologiques complexes et les structures cellulaires du tissu, produisant des échantillons synthétiques visuellement très cohérents avec les données médicales réelles. Ce résultat est encourageant pour des usages tels que l'augmentation de données en contexte de faible volume d'échantillons annotés, un problème récurrent en imagerie médicale.</p>
+
+            <div class="project-callout">
+                <strong>À retenir :</strong> un même mécanisme — prédire le bruit à différentes échelles — permet de générer des chiffres manuscrits, des visages, de l'inpainting cohérent avec le contexte, une génération conditionnelle par classe, et des textures histologiques réalistes sur un domaine médical à faibles ressources.
+            </div>
+
+            <h2 id="conclusion">12. Conclusion</h2>
+            <p>Ce projet illustre comment un principe théorique simple — inverser un processus de diffusion en prédisant le bruit ajouté à chaque étape — donne naissance à un cadre génératif extrêmement flexible : ablation du nombre de pas, test de généralisation vs. mémorisation, inpainting par masquage, conditionnement par classe et enfin application à un domaine à fort enjeu, l'imagerie médicale. Les pistes naturelles de prolongement incluent l'accélération de l'échantillonnage (DDIM, distillation), l'extension à des résolutions plus élevées et une évaluation quantitative (FID, précision/rappel) sur les échantillons médicaux générés.</p>
+
+            <h3>Références</h3>
+            <ul>
+                <li>J. Ho, A. Jain, P. Abbeel. <em>Denoising Diffusion Probabilistic Models</em>. arXiv:2006.11239, 2020.</li>
+                <li>Y. Song, S. Ermon. <em>Generative Modeling by Estimating Gradients of the Data Distribution</em>. NeurIPS, 2019.</li>
+                <li>J. Yang et al. <em>MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification</em>. Scientific Data, 10(1), 2023.</li>
+            </ul>
+
+        </div>
+
+        <div class="blog-footer">
+            <h3>À propos de l'auteur</h3>
+            <p>Abdennour Kerboua, étudiant chercheur en Deep Learning. Projet réalisé avec Daniel Akbarinia dans le cadre du cours Deep Learning (V. Lepetit, M. Vakalopoulou) du Master MVA.</p>
+            <a href="../../index.html" class="back-link">&larr; Retour à l'accueil</a>
+        </div>
+    </article>
+
+    <footer style="text-align: center; padding: 2rem;">
+        <p>&copy; 2026 Abdennour Kerboua.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

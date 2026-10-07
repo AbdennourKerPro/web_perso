@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ALTeGraD Molecular Graph Captioning project comparing contrastive graph-text alignment with generative molecular captioning using SciBERT, GNNs and Galactica.">
+    <meta property="og:title" content="Molecular Graph Captioning | Abdennour Kerboua">
+    <meta property="og:description" content="A multimodal learning project comparing contrastive retrieval and conditional generation for molecular graph captioning.">
+    <title>Molecular Graph Captioning | Abdennour Kerboua</title>
+    <link rel="stylesheet" href="../../style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+
+    <style>
+        .altegrad-page {
+            --project-accent: var(--accent);
+            --project-accent-2: var(--accent-2);
+            --project-ink: var(--text-dark);
+            --project-muted: var(--text-medium);
+            --project-line: var(--border-color);
+            --project-panel: var(--bg-secondary);
+            --project-success: var(--accent-3);
+            color: var(--project-ink);
+        }
+
+        .altegrad-page .project-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .altegrad-page .project-kicker {
+            margin: 0 0 0.65rem;
+            color: var(--project-accent);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .altegrad-page .project-header h1 {
+            max-width: 900px;
+            margin-bottom: 0.8rem;
+            line-height: 1.08;
+        }
+
+        .altegrad-page .project-subtitle {
+            max-width: 850px;
+            margin: 0 0 1rem;
+            color: var(--project-muted);
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            line-height: 1.65;
+        }
+
+        .altegrad-page .project-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem 1.25rem;
+            margin: 1rem 0 0;
+            color: var(--project-muted);
+            font-size: 0.92rem;
+        }
+
+        .altegrad-page .project-meta strong {
+            color: var(--project-ink);
+        }
+
+        .altegrad-page .project-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin: 1.5rem 0 2rem;
+        }
+
+        .altegrad-page .metric-card {
+            min-height: 118px;
+            padding: 1rem;
+            border: 1px solid var(--project-line);
+            border-radius: 18px;
+            background: linear-gradient(145deg, var(--surface), var(--project-panel));
+        }
+
+        .altegrad-page .metric-value {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: var(--project-accent);
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .altegrad-page .metric-label {
+            display: block;
+            color: var(--project-muted);
+            font-size: 0.82rem;
+            line-height: 1.35;
+        }
+
+        .altegrad-page .project-toc {
+            margin: 2rem 0;
+            padding: 1.2rem 1.35rem;
+            border: 1px solid var(--project-line);
+            border-radius: 18px;
+            background: var(--project-panel);
+        }
+
+        .altegrad-page .project-toc h2 {
+            margin-top: 0;
+            font-size: 1rem;
+        }
+
+        .altegrad-page .project-toc ul {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem 1.25rem;
+            margin-bottom: 0;
+            padding-left: 1.1rem;
+        }
+
+        .altegrad-page .project-toc a {
+            color: var(--project-accent);
+            text-decoration: none;
+        }
+
+        .altegrad-page .project-toc a:hover {
+            text-decoration: underline;
+        }
+
+        .altegrad-page .content > h2 {
+            margin-top: 3rem;
+            padding-top: 0.4rem;
+            scroll-margin-top: 90px;
+        }
+
+        .altegrad-page .content h3 {
+            margin-top: 2rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .altegrad-page .content p,
+        .altegrad-page .content li {
+            line-height: 1.72;
+        }
+
+        .altegrad-page .two-column {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .altegrad-page .method-card {
+            padding: 1.15rem;
+            border: 1px solid var(--project-line);
+            border-radius: 18px;
+            background: var(--surface);
+        }
+
+        .altegrad-page .method-card h3 {
+            margin-top: 0;
+        }
+
+        .altegrad-page .method-card p:last-child,
+        .altegrad-page .method-card ul:last-child {
+            margin-bottom: 0;
+        }
+
+        .altegrad-page .project-figure {
+            margin: 1.6rem 0 2rem;
+            padding: 0.75rem;
+            border: 1px solid var(--project-line);
+            border-radius: 18px;
+            background: var(--surface);
+        }
+
+        .altegrad-page .project-figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 11px;
+        }
+
+        .altegrad-page .project-figure figcaption {
+            margin-top: 0.75rem;
+            color: var(--project-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .altegrad-page .project-callout {
+            margin: 1.5rem 0;
+            padding: 1.1rem 1.2rem;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--project-accent);
+            border-radius: 14px;
+            background: var(--accent-subtle);
+            color: var(--text-dark);
+            line-height: 1.65;
+        }
+
+        .altegrad-page .finding-callout {
+            border-color: var(--border-color);
+            border-left-color: var(--project-success);
+            background: color-mix(in srgb, var(--accent-3) 10%, transparent);
+        }
+
+        .altegrad-page .results-table-wrap {
+            margin: 1.3rem 0 1.8rem;
+            overflow-x: auto;
+            border: 1px solid var(--project-line);
+            border-radius: 16px;
+        }
+
+        .altegrad-page .results-table {
+            width: 100%;
+            min-width: 620px;
+            border-collapse: collapse;
+            background: var(--surface);
+        }
+
+        .altegrad-page .results-table th,
+        .altegrad-page .results-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--project-line);
+            text-align: left;
+        }
+
+        .altegrad-page .results-table th {
+            background: var(--project-panel);
+            color: var(--project-ink);
+            font-size: 0.84rem;
+            letter-spacing: 0.02em;
+        }
+
+        .altegrad-page .results-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .altegrad-page .results-table .best-score {
+            color: var(--project-success);
+            font-weight: 800;
+        }
+
+        .altegrad-page .example-box {
+            display: grid;
+            gap: 0.85rem;
+            margin: 1.4rem 0;
+            padding: 1.2rem;
+            border: 1px solid var(--project-line);
+            border-radius: 18px;
+            background: var(--bg-secondary);
+            color: var(--text-dark);
+        }
+
+        .altegrad-page .example-box p {
+            margin: 0;
+        }
+
+        .altegrad-page .example-label {
+            color: var(--accent-2);
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .altegrad-page .limitations-list,
+        .altegrad-page .future-list {
+            padding-left: 1.2rem;
+        }
+
+        .altegrad-page .references {
+            color: var(--project-muted);
+            font-size: 0.92rem;
+        }
+
+        .altegrad-page .references li {
+            margin-bottom: 0.7rem;
+        }
+
+        .altegrad-page .project-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+
+        .altegrad-page .report-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 1rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--project-accent), var(--project-accent-2));
+            color: var(--on-accent);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        @media (max-width: 800px) {
+            .altegrad-page .project-summary,
+            .altegrad-page .two-column {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .altegrad-page .project-toc ul {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .altegrad-page .project-summary,
+            .altegrad-page .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .altegrad-page .metric-card {
+                min-height: auto;
+            }
+        }
+    </style>
+  <link rel="stylesheet" href="../../project-minimal.css?v=20260821b">
+</head>
+<body>
+
+    <nav>
+        <a href="../../index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links"><a href="../../index.html#work">work</a><a href="../../index.html#education">education</a><a href="../../index.html#experience">experience</a><a href="../../index.html#links">links</a></div>
+    </nav>
+
+    <div class="container altegrad-page">
+        <article class="project-detail">
+
+            <header class="project-header">
+                <p class="project-kicker">ALTeGraD Kaggle Challenge · Team HeisenBERT</p>
+                <h1>Molecular Graph Captioning</h1>
+                <p class="project-subtitle">
+                    A multimodal learning project that bridges molecular structure and scientific language by comparing
+                    graph-text contrastive alignment with end-to-end conditional caption generation.
+                </p>
+
+                <div class="tags">
+                    <span class="tag">Graph Neural Networks</span>
+                    <span class="tag">SciBERT + LoRA</span>
+                    <span class="tag">Galactica</span>
+                    <span class="tag">Multimodal Learning</span>
+                    <span class="tag">Contrastive Learning</span>
+                </div>
+
+                <div class="project-meta">
+                    <span><strong>Authors:</strong> Abdennour Kerboua and Daniel Akbarinia</span>
+                    <span><strong>Task:</strong> Graph-to-text molecular description</span>
+                    <span><strong>Year:</strong> 2025</span>
+                </div>
+            </header>
+
+            <section class="project-summary" aria-label="Project highlights">
+                <div class="metric-card">
+                    <span class="metric-value">0.66</span>
+                    <span class="metric-label">Best Kaggle score, obtained by the 30-epoch contrastive model.</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">0.7704</span>
+                    <span class="metric-label">Mean Reciprocal Rank for graph-to-text retrieval.</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">96.7%</span>
+                    <span class="metric-label">Recall@10 on the contrastive validation retrieval task.</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">2</span>
+                    <span class="metric-label">Complementary paradigms: retrieval-based alignment and direct generation.</span>
+                </div>
+            </section>
+
+            <nav class="project-toc" aria-label="Table of contents">
+                <h2>Contents</h2>
+                <ul>
+                    <li><a href="#overview">1. Problem and objective</a></li>
+                    <li><a href="#approaches">2. Proposed approaches</a></li>
+                    <li><a href="#training">3. Training protocol</a></li>
+                    <li><a href="#results">4. Results and analysis</a></li>
+                    <li><a href="#limitations">5. Limitations</a></li>
+                    <li><a href="#future-work">6. Future work</a></li>
+                </ul>
+            </nav>
+
+            <section class="content">
+
+                <h2 id="overview">1. Problem and objective</h2>
+                <p>
+                    Molecular graph captioning requires a model to translate a structured chemical representation into a
+                    fluent natural-language description. Each molecule is represented as a graph whose nodes encode atoms
+                    and whose edges encode chemical bonds. The target caption may describe the molecule's chemical family,
+                    structural properties, biological role or metabolic function.
+                </p>
+                <p>
+                    The central difficulty is the modality gap: graph encoders reason over topology and bond attributes,
+                    whereas language models operate over token sequences. Our objective was to determine whether this gap is
+                    better addressed through a shared embedding space or through direct conditioning of a scientific language
+                    model on learned molecular features.
+                </p>
+
+                <div class="project-callout">
+                    <strong>Research question.</strong> Under limited data, training time and GPU memory, which strategy is
+                    more effective for molecular captioning: retrieving a caption from a graph-text embedding space, or
+                    generating a new caption autoregressively from the molecular graph?
+                </div>
+
+                <h2 id="approaches">2. Proposed approaches</h2>
+
+                <div class="two-column">
+                    <article class="method-card">
+                        <h3>Contrastive graph-text alignment</h3>
+                        <p>
+                            A molecular graph encoder and a SciBERT text encoder are trained to map paired graphs and
+                            descriptions into the same normalized latent space. At inference time, a graph embedding is used
+                            to retrieve the most similar caption from a reference corpus.
+                        </p>
+                        <ul>
+                            <li>Three <strong>GINEConv</strong> layers integrate atom and bond attributes.</li>
+                            <li>Discrete node and edge features are embedded and summed into dense representations.</li>
+                            <li><strong>Global additive pooling</strong> creates one graph-level vector.</li>
+                            <li><strong>SciBERT</strong> provides domain-specific text representations.</li>
+                            <li><strong>LoRA</strong> enables parameter-efficient adaptation of the text encoder.</li>
+                        </ul>
+                    </article>
+
+                    <article class="method-card">
+                        <h3>Generative molecular captioning</h3>
+                        <p>
+                            The second approach models the task directly as conditional generation, P(T|G). An attentive
+                            graph encoder produces a molecular representation that is converted into continuous prefix tokens
+                            and prepended to the input of a scientific language model.
+                        </p>
+                        <ul>
+                            <li>Three <strong>GATv2Conv</strong> layers dynamically weight neighboring atoms.</li>
+                            <li><strong>AttentionalAggregation</strong> focuses on salient functional groups.</li>
+                            <li>A projector expands the graph vector into <strong>eight soft tokens</strong>.</li>
+                            <li>The tokens condition the <strong>Galactica 125M</strong> language model.</li>
+                            <li>Captions are produced autoregressively until an end token is generated.</li>
+                        </ul>
+                    </article>
+                </div>
+
+                <h3>Contrastive pipeline</h3>
+                <p>
+                    The contrastive objective uses a temperature-scaled similarity matrix over every graph-text pair in a
+                    batch. A symmetric cross-entropy loss optimizes both graph-to-text and text-to-graph retrieval, increasing
+                    the similarity of matched pairs while separating mismatched pairs.
+                </p>
+
+                <figure class="project-figure">
+                    <img src="assets/contrastive-pipeline.png" alt="Training and retrieval pipeline for the contrastive graph-text model" loading="lazy">
+                    <figcaption>
+                        Contrastive training and retrieval pipeline: paired graph and text encoders learn a joint embedding
+                        space, then a query molecule retrieves the closest description.
+                    </figcaption>
+                </figure>
+
+                <p>
+                    We also evaluated an auxiliary adversarial discriminator intended to enforce modality-invariant graph and
+                    text representations. It was alternately trained to identify the embedding modality while the encoders
+                    learned to fool it. In practice, this additional objective did not produce a meaningful performance gain.
+                </p>
+
+                <h3>Generative pipeline</h3>
+                <p>
+                    Inspired by MolCA, the generative architecture replaces a single graph vector with a sequence of learned
+                    prefix embeddings. These graph-derived tokens occupy the same dimensional space as Galactica's word
+                    embeddings, allowing the language model to condition every generated token on molecular structure.
+                </p>
+
+                <figure class="project-figure">
+                    <img src="assets/generative-pipeline.png" alt="Generative molecular graph captioning pipeline using an attentive graph encoder, multi-token projector and Galactica" loading="lazy">
+                    <figcaption>
+                        Generative pipeline: an attentive graph encoder and multi-token projector create eight continuous
+                        prefix tokens that condition Galactica during caption generation.
+                    </figcaption>
+                </figure>
+
+                <h2 id="training">3. Training protocol</h2>
+
+                <div class="two-column">
+                    <article class="method-card">
+                        <h3>Contrastive model</h3>
+                        <ul>
+                            <li>Trained for up to <strong>30 epochs</strong>.</li>
+                            <li>Approximately <strong>3 minutes per epoch</strong>.</li>
+                            <li>L2-normalized graph and text embeddings.</li>
+                            <li>Learnable temperature, clamped to prevent instability.</li>
+                            <li>Best checkpoint selected using validation performance.</li>
+                        </ul>
+                    </article>
+
+                    <article class="method-card">
+                        <h3>Generative model</h3>
+                        <ul>
+                            <li>Limited to <strong>10 epochs</strong> by memory and overfitting constraints.</li>
+                            <li>Approximately <strong>10 minutes per epoch</strong>.</li>
+                            <li>Graph encoder and projector learning rate: <strong>10<sup>-3</sup></strong>.</li>
+                            <li>Galactica learning rate: <strong>5 × 10<sup>-5</sup></strong>.</li>
+                            <li>Graph prefix positions ignored in the causal language-modeling loss.</li>
+                        </ul>
+                    </article>
+                </div>
+
+                <p>
+                    For the generative model, the input sequence is the concatenation of the projected graph prefix and the
+                    caption token embeddings. The shifted cross-entropy loss is applied only to the textual positions, so the
+                    model learns to predict the description from the graph without attempting to reconstruct the continuous
+                    prefix itself.
+                </p>
+
+                <h2 id="results">4. Results and analysis</h2>
+
+                <div class="results-table-wrap">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Approach</th>
+                                <th>Backbone</th>
+                                <th>Training epochs</th>
+                                <th>Kaggle score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contrastive</td>
+                                <td>SciBERT + GNN</td>
+                                <td>10</td>
+                                <td>0.56</td>
+                            </tr>
+                            <tr>
+                                <td>Generative</td>
+                                <td>Galactica 125M</td>
+                                <td>10</td>
+                                <td>0.60</td>
+                            </tr>
+                            <tr>
+                                <td>Contrastive</td>
+                                <td>SciBERT + GNN</td>
+                                <td>30</td>
+                                <td class="best-score">0.66</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="project-callout finding-callout">
+                    <strong>Main finding.</strong> At an equal training budget of 10 epochs, the generative model performed
+                    better (0.60 versus 0.56), showing the value of a scientific language-model prior. However, the longer-trained
+                    contrastive system remained the strongest overall submission, reaching 0.66 after 30 epochs.
+                </div>
+
+                <h3>Retrieval quality</h3>
+                <p>
+                    The best contrastive model achieved an <strong>MRR of 0.7704</strong>, meaning that the correct description
+                    was typically ranked between first and second. Its <strong>Recall@1 was 0.6450</strong>, while
+                    <strong>Recall@10 reached 0.9670</strong>. The latter result shows that the learned joint space reliably
+                    clusters semantically compatible molecular graphs and captions.
+                </p>
+
+                <h3>Qualitative generation</h3>
+                <p>
+                    After 10 epochs, the generative system was already capable of reproducing specific chemical and biological
+                    information rather than merely producing generic chemistry vocabulary.
+                </p>
+
+                <div class="example-box">
+                    <div>
+                        <span class="example-label">Reference</span>
+                        <p>
+                            The molecule is tetraanion of ADP-D-ribose 2'-phosphate. It has a role as a human metabolite. It is
+                            a purine ribonucleoside 5'-diphosphate, a member of adenosines and a carbohydrate phosphate.
+                        </p>
+                    </div>
+                    <div>
+                        <span class="example-label">Prediction after 10 epochs</span>
+                        <p>
+                            The molecule is tetraanion of ADP-D-ribose 2'-phosphate. It has a role as a human metabolite. It is
+                            a purine ribonucleoside 5'-diphosphate...
+                        </p>
+                    </div>
+                </div>
+
+                <h3>Discriminator ablation</h3>
+                <p>
+                    Adding an adversarial discriminator to the contrastive framework did not significantly improve the
+                    challenge score or retrieval metrics. The symmetric contrastive loss was already sufficient to align the
+                    two modalities, while the discriminator introduced additional optimization complexity.
+                </p>
+
+                <h2 id="limitations">5. Limitations</h2>
+                <ul class="limitations-list">
+                    <li>
+                        <strong>Generative overfitting:</strong> validation loss began to diverge around epoch 7, suggesting
+                        that Galactica was memorizing recurring descriptions instead of learning a fully general structural-to-text mapping.
+                    </li>
+                    <li>
+                        <strong>Compute constraints:</strong> GPU memory limited the study to Galactica 125M and restricted the
+                        generative training duration.
+                    </li>
+                    <li>
+                        <strong>Unequal optimization budgets:</strong> the contrastive model was trained for 30 epochs, while the
+                        generative model was stopped at 10 epochs.
+                    </li>
+                    <li>
+                        <strong>Retrieval dependence:</strong> the contrastive system can only return descriptions available in
+                        its candidate corpus, whereas direct generation is more flexible but more prone to hallucination.
+                    </li>
+                </ul>
+
+                <h2 id="future-work">6. Future work</h2>
+                <ul class="future-list">
+                    <li>
+                        <strong>Scale the scientific language model</strong> to larger Galactica variants, provided that a larger
+                        training set is available to control overfitting.
+                    </li>
+                    <li>
+                        <strong>Combine molecular graphs with SMILES strings</strong> to fuse topological and sequential chemical representations.
+                    </li>
+                    <li>
+                        <strong>Introduce graph-language cross-attention</strong> for finer interaction between molecular regions
+                        and generated words.
+                    </li>
+                    <li>
+                        <strong>Apply graph augmentation and stronger regularization</strong>, including subgraph masking, node
+                        dropping and increased weight decay.
+                    </li>
+                    <li>
+                        <strong>Explore generation-assisted retrieval</strong>: generate a candidate caption, then use it to retrieve
+                        the closest verified description from the corpus, reducing hallucination risk.
+                    </li>
+                </ul>
+
+                <h2>Conclusion</h2>
+                <p>
+                    The project demonstrates that both retrieval-based alignment and direct generation are viable strategies for
+                    molecular graph captioning. The contrastive SciBERT-GNN architecture was the most robust option under the
+                    available computational budget, while the Galactica-based system showed stronger early performance and greater
+                    linguistic flexibility. Together, these results support further work on hybrid graph-language models for drug
+                    discovery, chemical search and automated scientific reporting.
+                </p>
+
+                <h2>References</h2>
+                <ol class="references">
+                    <li>ALTeGraD Kaggle Challenge, <em>Molecular Graph Captioning</em>, 2025.</li>
+                    <li>Liu et al., <em>MolCA: Molecular Graph-Language Modeling with Cross-Modal Projector and Uni-Modal Adapter</em>, 2023.</li>
+                    <li>Radford et al., <em>Learning Transferable Visual Models From Natural Language Supervision</em>, 2021.</li>
+                    <li>Taylor et al., <em>Galactica: A Large Language Model for Science</em>, 2022.</li>
+                </ol>
+
+            </section>
+
+            <div class="project-actions">
+                <a href="report_altegrad.pdf" target="_blank" rel="noopener" class="report-btn">Read the full report</a>
+                <a href="../../portfolio.html" class="back-to-portfolio">&larr; Back to portfolio</a>
+            </div>
+
+        </article>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Abdennour Kerboua.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebase-config.js?v=20260722d"></script>
+    <script src="../../data.js?v=20260722d"></script>
+    <script src="../../script.js?v=20260722d"></script>
+</body>
+</html>

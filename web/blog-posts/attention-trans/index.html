@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomie des Transformers & Decoder-Only | Abdennour Kerboua</title>
+    
+    <link rel="stylesheet" href="../../style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <nav>
+        <a href="../../index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links">
+            <a href="../../index.html">Home</a>
+            <a href="../../index.html#blog" class="active">Blog</a>
+            <a href="../../cv.html">CV</a>
+            <a href="../../portfolio.html" class="cta-button">Portfolio</a>
+        </div>
+    </nav>
+
+    <article class="blog-post-container">
+        <header class="blog-header">
+            <h1 class="article-title">De l'Attention au Decoder-Only : Analyse Mathématique des LLMs</h1>
+            <div class="author-meta">
+                <div class="meta-text">
+                    <span class="author-name">Abdennour Kerboua</span>
+                    <span class="post-date">27 Nov 2025 · 15 min de lecture</span>
+                </div>
+            </div>
+        </header>
+
+
+        <figure class="featured-image">
+            <img src="trans.png" alt="Architecture Transformer Originale">
+            <figcaption>L'architecture originale proposée par Vaswani et al. (2017)</figcaption>
+        </figure>
+
+        <div class="article-content">
+            <p>L'architecture Transformer a marqué un point d'inflexion dans l'histoire du Deep Learning. Initialement conçue pour la traduction automatique (Sequence-to-Sequence), elle est devenue la fondation des Large Language Models (LLMs) modernes.</p>
+            <p>Dans cet article, nous déconstruisons formellement le mécanisme d'attention original avant d'analyser pourquoi les architectures modernes (GPT-4, Llama 2, Falcon) ont délaissé l'encodeur pour se concentrer exclusivement sur le décodeur.</p>
+
+            <h2>1. Le Cœur du Réacteur : Scaled Dot-Product Attention</h2>
+            <p>Contrairement aux RNNs qui traitent l'information de manière séquentielle (\(t, t+1, ...\)), le Transformer traite l'ensemble de la séquence en parallèle. La brique fondamentale est le mécanisme d'attention.</p>
+
+            <h3>Définition Formelle</h3>
+            <p>Soit une séquence d'entrée transformée en vecteurs. Pour chaque token, nous projetons son embedding dans trois sous-espaces distincts à l'aide de matrices de poids apprenables \(W^Q, W^K, W^V\) :</p>
+            
+            <ul>
+                <li><strong>Query (\(Q\))</strong> : Ce que le token cherche.</li>
+                <li><strong>Key (\(K\))</strong> : Ce que le token offre comme information.</li>
+                <li><strong>Value (\(V\))</strong> : Le contenu informationnel intrinsèque du token.</li>
+            </ul>
+
+            <p>L'attention est calculée comme une somme pondérée des valeurs \(V\), où les poids dépendent de la similarité entre la requête \(Q\) et les clés \(K\). L'équation canonique est :</p>
+
+            $$ \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
+
+            <p><strong>Intuition :</strong> Le terme \(QK^T\) calcule le produit scalaire (similarité) entre chaque paire de mots. Nous divisons par \(\sqrt{d_k}\) (la racine de la dimension des clés) pour éviter que le produit scalaire ne devienne trop grand, ce qui pousserait le Softmax dans des zones où les gradients sont quasi-nuls (vanishing gradients).</p>
+            <h3>Positional Encoding</h3>
+            <p>Le mécanisme d'attention étant invariant par permutation (il traite "Chat mange souris" et "Souris mange chat" de la même façon mathématique sans contexte de position), nous devons injecter une information de position. Vaswani et al. utilisent des fonctions sinusoïdales :</p>
+
+            $$ PE_{(pos, 2i)} = \sin(pos / 10000^{2i/d_{model}}) $$
+            $$ PE_{(pos, 2i+1)} = \cos(pos / 10000^{2i/d_{model}}) $$
+            
+            <hr class="separator">
+
+            <h2>1.2. Le Décodeur Original et la Cross-Attention</h2>
+            <p>Dans l'architecture originale (vaswani et al.), le décodeur a pour rôle de générer la séquence cible (ex: la traduction française) en se basant sur la représentation riche fournie par l'encodeur.</p>
+
+            <p>Chaque couche du décodeur possède une sous-couche supplémentaire cruciale : la <strong>Cross-Attention</strong> (ou Encoder-Decoder Attention).</p>
+
+            <h3>Définition Formelle</h3>
+            <p>Contrairement à la <em>Self-Attention</em> où les requêtes, clés et valeurs proviennent de la même source, la <em>Cross-Attention</em> mélange deux flux d'informations :</p>
+            <ul>
+                <li><strong>Query (\(Q\))</strong> : Provient de la couche précédente du <strong>Décodeur</strong> (ce que l'on cherche à traduire).</li>
+                <li><strong>Key (\(K\)) et Value (\(V\))</strong> : Proviennent de la sortie finale de l'<strong>Encodeur</strong> (le contexte de la phrase source).</li>
+            </ul>
+
+            <p>Si l'on note \(H_{dec}\) l'état caché du décodeur et \(H_{enc}\) la sortie de l'encodeur, l'équation devient :</p>
+
+            $$ \text{CrossAttention}(H_{dec}, H_{enc}) = \text{softmax}\left(\frac{(H_{dec}W^Q)(H_{enc}W^K)^T}{\sqrt{d_k}}\right)(H_{enc}W^V) $$
+
+            <p>Cette distinction est fondamentale : les matrices \(K\) et \(V\) sont calculées <strong>une seule fois</strong> à partir de l'encodeur, tandis que \(Q\) change à chaque nouveau token généré par le décodeur.</p>
+
+            <h3>Intuition Naturelle</h3>
+            <p>Imaginez un traducteur humain. Le mécanisme de <strong>Self-Attention</strong> (masqué) lui permet de vérifier la cohérence grammaticale de ce qu'il est en train d'écrire ("Je suis" \(\rightarrow\) accord correct). La <strong>Cross-Attention</strong>, c'est le moment où il lève les yeux vers le texte original pour chercher le sens du mot source précis qu'il doit traduire maintenant.</p>
+            
+            <blockquote>
+                "Le décodeur 'requête' (Query) de l'information à l'encodeur, qui lui présente ses 'clés' (Keys) pour voir ce qui correspond, et renvoie les 'valeurs' (Values) pertinentes."
+            </blockquote>
+
+            <hr class="separator">
+
+            <h2>2. L'Architecture Decoder-Only (GPT, Llama, Falcon)</h2>
+            <p>Le papier original de 2017 utilisait une architecture <strong>Encoder-Decoder</strong> (l'encodeur lit la source, le décodeur génère la traduction). Cependant, la majorité des LLMs actuels (sauf T5 ou BART) utilisent une architecture <strong>Decoder-Only</strong>.</p>
+
+            <figure class="featured-image">
+            <img src="decoder.png" alt="Architecture Transformer Originale">
+            <figcaption>Génération de texte utilisant un Decoder (2017)</figcaption>
+        </figure>
+
+            <h3>Pourquoi abandonner l'Encodeur ?</h3>
+            <p>Pour des tâches de génération de texte (Causal Language Modeling), l'objectif est de prédire le token suivant \(x_{t}\) sachant les précédents \(x_{1}, ..., x_{t-1}\). L'encodeur (qui a accès à toute la phrase, passé et futur via l'attention bidirectionnelle) introduit une "fuite" d'information du futur inacceptable pour la génération pure.</p>
+
+            <h3>Masked Self-Attention (Masque Causal)</h3>
+            <p>Dans un modèle Decoder-Only, nous modifions l'équation de l'attention en ajoutant un masque \(M\). Ce masque assure qu'un token à la position \(t\) ne peut porter attention qu'aux positions \(i \leq t\).</p>
+            
+            <p>Formellement, la matrice de masque \(M \in \mathbb{R}^{T \times T}\) est définie par :</p>
+            
+            $$ M_{ij} = \begin{cases} 0 & \text{si } i \ge j \\ -\infty & \text{si } i < j \end{cases} $$
+
+            <p>L'équation de l'attention devient :</p>
+
+            $$ \text{MaskedAttention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}} + M\right)V $$
+
+            <p>Le terme \(-\infty\) dans le masque garantit qu'après l'application du Softmax, la probabilité d'attention vers les tokens futurs (\(j > i\)) est exactement de 0.</p>
+
+            <h3>Exemple Concret de Génération</h3>
+            <p>Imaginons que nous voulons compléter la phrase : <em>"La Tour Eiffel est située à"</em>.</p>
+            
+            <ol>
+                <li><strong>Input (\(t=6\))</strong> : <code>["La", "Tour", "Eiffel", "est", "située", "à"]</code></li>
+                <li>Le modèle calcule l'attention. Le token "à" peut regarder "Tour" et "Eiffel", mais ne peut pas voir ce qui n'a pas encore été généré.</li>
+                <li><strong>Output Logits</strong> : Le modèle sort une distribution de probabilité sur tout le vocabulaire (ex: 50 000 tokens).</li>
+                <li><strong>Sampling</strong> : La probabilité la plus haute est sur le token <code>"Paris"</code>.</li>
+                <li><strong>Nouvelle itération</strong> : L'input devient <code>["La", "Tour", "Eiffel", "est", "située", "à", "Paris"]</code> et on recommence pour prédire le point final.</li>
+            </ol>
+
+            <h3>Modélisation Probabiliste</h3>
+            <p>L'objectif d'entraînement d'un LLM Decoder-Only est de maximiser la log-vraisemblance (Log-Likelihood) sur le dataset \(D\) :</p>
+
+            $$ \mathcal{L}(\theta) = \sum_{x \in D} \sum_{t=1}^{T} \log P(x_t | x_{1}, ..., x_{t-1}; \theta) $$
+
+            <p>C'est cette contrainte d'autorégressivité qui force le modèle à "comprendre" la structure du langage plutôt que de simplement classifier des mots.</p>
+
+        </div>
+
+        <div class="blog-footer">
+            <h3>À propos de l'auteur</h3>
+            <p>Abdennour Kerboua, étudiant chercheur en Deep Learning. Passionné par l'optimisation des architectures de réseaux de neurones.</p>
+            <a href="../../index.html" class="back-link">&larr; Retour à l'accueil</a>
+        </div>
+    </article>
+
+    <footer style="text-align: center; padding: 2rem;">
+        <p>&copy; 2025 Abdennour Kerboua.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebase-config.js?v=20260722d"></script>
+    <script src="../../data.js?v=20260722d"></script>
+    <script src="../../script.js?v=20260722d"></script>
+</body>
+</html>

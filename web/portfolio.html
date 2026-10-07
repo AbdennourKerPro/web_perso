@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio — Abdennour Kerboua</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#blog">Blog</a>
+            <a href="cv.html">CV</a>
+            <a href="portfolio.html" class="cta-button">Portfolio</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section>
+            <h1 class="section-title-centered">My Projects</h1>
+            <p class="section-subtitle-centered">
+                A selection of my research and development work in Deep Learning and Computer Vision.
+                Hover an entry to preview it, or browse from the keyboard with <strong>j</strong> / <strong>k</strong>.
+            </p>
+
+            <div class="explorer-toolbar">
+                <div class="filter-chips" id="filterChips"></div>
+                <div class="view-toggle" id="viewToggle">
+                    <button class="active" data-view="index" type="button">Index</button>
+                    <button data-view="grid" type="button">Grid</button>
+                </div>
+            </div>
+
+            <div class="explorer" id="explorer">
+                <div class="explorer-list" id="explorerList"></div>
+                <aside class="explorer-preview" id="explorerPreview"></aside>
+            </div>
+
+            <div class="portfolio-grid" id="portfolioContainer" hidden></div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Abdennour Kerboua — built with passion &amp; pure code. Press <strong>⌘K</strong> to navigate.</p>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=20260722d"></script>
+    <script src="data.js?v=20260816a"></script>
+    <script src="script.js?v=20260722d"></script>
+</body>
+</html>

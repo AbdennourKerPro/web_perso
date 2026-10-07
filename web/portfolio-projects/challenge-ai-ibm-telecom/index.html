@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge AI IBM x Telecom | Abdennour Kerboua</title>
+    <link rel="stylesheet" href="../../style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+  <link rel="stylesheet" href="../../project-minimal.css?v=20260821b">
+</head>
+<body>
+
+    <nav>
+        <a href="../../index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links"><a href="../../index.html#work">work</a><a href="../../index.html#education">education</a><a href="../../index.html#experience">experience</a><a href="../../index.html#links">links</a></div>
+    </nav>
+
+    <div class="container">
+        <article class="project-detail">
+
+            <header class="project-header">
+                <h1>Challenge AI: IBM x Telecom</h1>
+                <div class="tags">
+                    <span class="tag">Machine Learning</span>
+                    <span class="tag">Fraud Detection</span>
+                    <span class="tag">Random Forest</span>
+                    <span class="tag">Feature Engineering</span>
+                </div>
+            </header>
+
+            <nav class="project-toc">
+                <h2>Sommaire</h2>
+                <ul>
+                    <li><a href="#contexte">1. Contexte</a></li>
+                    <li><a href="#objectifs">2. Objectifs</a></li>
+                    <li><a href="#methodologie">3. Méthodologie</a></li>
+                    <li><a href="#resultats">4. Résultats</a></li>
+                    <li><a href="#suite">5. Suite / perspectives</a></li>
+                </ul>
+            </nav>
+
+            <section class="content">
+
+                <h2 id="contexte">1. Contexte</h2>
+                <p>
+                    Ce projet a été réalisé dans le cadre du <strong>Challenge IA/Data IBM x Télécom Paris 2025</strong>, en équipe de trois (équipe "Jérôme Kernel"). L'objectif du challenge était d'identifier automatiquement des transactions bancaires frauduleuses au sein d'un large volume d'opérations, à partir de jeux de données fournis par IBM : historiques de transactions, informations sur les cartes et profils des porteurs.
+                </p>
+                <p>
+                    Le jeu de données d'entraînement contenait <strong>210 000 transactions</strong> labellisées (dont seulement <strong>315 fraudes</strong>, soit un déséquilibre extrême de classe d'environ 0,15%), et le jeu d'évaluation comptait <strong>90 000 transactions</strong> à classer.
+                </p>
+
+                <h2 id="objectifs">2. Objectifs</h2>
+                <ul>
+                    <li>Détecter les transactions frauduleuses malgré un déséquilibre de classe très fort (moins de 0,2% de fraude).</li>
+                    <li>Construire des variables numériques et catégorielles pertinentes à partir des données brutes (transactions, cartes, utilisateurs) pour révéler des comportements suspects.</li>
+                    <li>Entraîner un modèle robuste au bruit et optimisé sur le <strong>F1-score</strong>, métrique retenue par les organisateurs pour gérer le déséquilibre de classe.</li>
+                </ul>
+
+                <h2 id="methodologie">3. Méthodologie</h2>
+                <p>
+                    Le pipeline complet a été développé en Python (pandas, scikit-learn, XGBoost) à partir de cinq sources de données fusionnées : les transactions, les labels de fraude, les cartes, les utilisateurs et les features d'évaluation.
+                </p>
+
+                <h3>Nettoyage et fusion des données</h3>
+                <ul>
+                    <li>Fusion des transactions avec les données cartes (<code>cards_data</code>) et utilisateurs (<code>users_data</code>) via <code>client_id</code> / <code>card_id</code>.</li>
+                    <li>Nettoyage des colonnes monétaires (suppression du symbole <code>$</code>, conversion en <code>float</code>) pour <code>amount</code>, <code>credit_limit</code>, <code>yearly_income</code>, etc.</li>
+                    <li>Analyse univariée systématique des variables numériques et catégorielles pour repérer les distributions atypiques.</li>
+                </ul>
+
+                <h3>Feature engineering</h3>
+                <p>
+                    L'analyse exploratoire des transactions frauduleuses a révélé deux signaux forts, transformés en variables binaires :
+                </p>
+                <ul>
+                    <li><strong><code>is_Rome</code></strong> : la ville marchande "Rome" concentre une part disproportionnée de fraudes, en particulier sur certains codes marchands (<code>mcc</code>) affichant un taux de fraude supérieur à 50% (jusqu'à 100% sur certains codes comme 3009, 5311 ou 7011).</li>
+                    <li><strong><code>is_Online</code></strong> : les transactions en ligne présentent également une sur-représentation de fraude, avec un scoring pondéré (taux de fraude × log(1 + nb de fraudes)) utilisé pour isoler les 70 marchands "ONLINE" les plus à risque.</li>
+                    <li>Découpage temporel de l'horodatage en indicateurs <code>is_morning</code> / <code>is_afternoon</code> / <code>is_night</code>.</li>
+                </ul>
+                <p>
+                    Le jeu de variables final retenu pour la modélisation combine <code>merchant_id</code>, <code>amount</code>, <code>mcc</code>, <code>year_pin_last_changed</code>, <code>current_age</code>, <code>retirement_age</code>, <code>credit_score</code>, <code>is_Rome</code> et <code>is_Online</code>.
+                </p>
+
+                <h3>Modélisation</h3>
+                <p>
+                    Une première approche par règles métier (fraude quasi-certaine si <code>merchant_city == "Rome"</code> avec un <code>mcc</code> à haut risque, ou marchand "ONLINE" identifié comme suspect) a servi de baseline. Elle a ensuite été remplacée par deux modèles supervisés comparés via validation croisée stratifiée à 5 plis (<code>StratifiedKFold</code>) et <code>GridSearchCV</code> optimisé sur le F1-score :
+                </p>
+                <ul>
+                    <li><strong>Random Forest</strong> (pipeline avec <code>StandardScaler</code>), grid search sur <code>n_estimators</code>, <code>max_depth</code>, <code>min_samples_split</code> et <code>min_samples_leaf</code>.</li>
+                    <li><strong>XGBoost</strong>, grid search sur <code>n_estimators</code>, <code>max_depth</code>, <code>learning_rate</code>, <code>subsample</code> et <code>colsample_bytree</code>.</li>
+                </ul>
+
+                <div class="project-callout">
+                    <strong>Résultat clé :</strong> Classé 3ème sur 25 équipes, avec un F1-score de 69% sur le leaderboard final du challenge.
+                </div>
+
+                <h2 id="resultats">4. Résultats</h2>
+                <p>
+                    En validation croisée, le <strong>Random Forest</strong> optimal (<code>max_depth=20</code>, <code>min_samples_split=5</code>, <code>n_estimators=100</code>) atteint un F1-score de <strong>0,62</strong>, tandis que <strong>XGBoost</strong> (<code>max_depth=7</code>, <code>learning_rate=0.2</code>, <code>n_estimators=100</code>) fait mieux avec un F1-score de <strong>0,72</strong>.
+                </p>
+                <p>
+                    L'analyse d'importance des variables confirme la pertinence du feature engineering métier : <code>is_Rome</code> et <code>mcc</code> arrivent en tête des variables les plus discriminantes, suivies de <code>merchant_id</code> et <code>amount</code>, devant les variables démographiques (<code>credit_score</code>, <code>current_age</code>, <code>retirement_age</code>).
+                </p>
+
+                <h2 id="suite">5. Suite / perspectives</h2>
+                <ul>
+                    <li>Traiter plus finement le déséquilibre de classe (SMOTE, pondération de classe) plutôt que de s'appuyer principalement sur des règles géographiques/marchandes.</li>
+                    <li>Enrichir les features comportementales par client/carte (fréquence d'achat, montant moyen, écarts-types glissants, détection de rafales de transactions).</li>
+                    <li>Fiabiliser le pipeline pour la production : monitoring du drift des variables, ré-entraînement périodique et seuil de décision ajustable selon le coût métier des faux positifs/négatifs.</li>
+                </ul>
+
+            </section>
+
+            <div class="project-actions">
+                <a href="https://github.com/AbdennourKerPro/challenge-IBM" target="_blank" class="github-btn">⚡ Voir le code sur GitHub</a>
+                <a href="../../portfolio.html" class="back-to-portfolio">&larr; Retour au Portfolio</a>
+            </div>
+
+        </article>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Abdennour Kerboua.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebase-config.js?v=20260722d"></script>
+    <script src="../../data.js?v=20260722d"></script>
+    <script src="../../script.js?v=20260722d"></script>
+</body>
+</html>

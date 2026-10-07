@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Abdennour</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* Contact row — layout only, colours come from style.css */
+        .cv-contact { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.5rem; }
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: transparent;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .contact-btn i { font-size: 0.95rem; }
+
+        .cv-grid-top { display: grid; grid-template-columns: 1fr; gap: 3rem; margin-top: 3rem; }
+        @media (min-width: 900px) { .cv-grid-top { grid-template-columns: 1.5fr 1fr; } }
+
+        .project-card-cv { display: flex; flex-direction: column; }
+        .project-card-cv p { flex-grow: 1; margin-bottom: 0; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#blog">Blog</a>
+            <a href="cv.html" class="active">CV</a>
+            <a href="portfolio.html" class="cta-button">Portfolio</a>
+        </div>
+    </nav>
+
+    <div class="container cv-container fade-in">
+        
+        <header class="cv-header">
+            <h1 style="margin-bottom: 0;">Abdennour Kerboua</h1>
+            <p class="cv-subtitle">Computer Vision Researcher @ Idemia · Télécom Paris & ENS Paris-Saclay</p>
+            
+            <div class="cv-contact">
+                <a href="mailto:abdennour.kerboua@telecom-paris.fr" class="contact-btn">
+                    <i class="fas fa-envelope"></i> Email
+                </a>
+                <a href="https://github.com/AbdennourKerPro" class="contact-btn" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="https://www.linkedin.com/in/abdennour-kerboua-892a42212/" class="contact-btn" target="_blank">
+                    <i class="fab fa-linkedin"></i> LinkedIn
+                </a>
+            </div>
+        </header>
+
+        <hr class="separator" style="margin: 2.5rem 0;">
+
+        <div class="cv-grid-top">
+            
+            <div class="left-column">
+                <section class="cv-section" style="margin-top: 0;">
+                    <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                    
+                    <div class="cv-item">
+                        <div class="cv-item-meta">2025 - 2026</div>
+                        <div class="cv-item-content">
+                            <h3>École Normale Supérieure Paris-Saclay</h3>
+                            <p><strong>Master in Mathematics, Vision, Learning (MVA)</strong></p>
+                            <p>Leading Mathematics, Vision, Learning algorithm Master.</p>
+                        </div>
+                    </div>
+
+                    <div class="cv-item">
+                        <div class="cv-item-meta">2023 - 2026</div>
+                        <div class="cv-item-content">
+                            <h3>Télécom Paris (IPP)</h3>
+                            <p><strong>Engineering Degree</strong> - GPA: 4/4</p>
+                            <p>Specializations: Image Processing, Signal Processing, Artificial Intelligence.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cv-item">
+                        <div class="cv-item-meta">2020 - 2023</div>
+                        <div class="cv-item-content">
+                            <h3>Lycée Janson-De-Sailly</h3>
+                            <p>Preparatory Classes for Grandes Écoles (CPGE), MPSI-MP*</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cv-section">
+                    <h2><i class="fas fa-briefcase"></i> Experience</h2>
+
+                    <div class="cv-item">
+                        <div class="cv-item-meta">Apr. 2026 – Present</div>
+                        <div class="cv-item-content">
+                            <h3>Computer Vision Researcher Intern</h3>
+                            <p><strong>Idemia Public Security</strong> — Courbevoie, France</p>
+                            <p>Literature review on object, person and luggage re-identification (Re-ID). Design and implementation of a baseline architecture for luggage Re-ID, followed by multi-view and 3D modules achieving <em>state-of-the-art</em> performance.</p>
+                        </div>
+                    </div>
+
+                    <div class="cv-item">
+                        <div class="cv-item-meta">Aug – Sep 2024</div>
+                        <div class="cv-item-content">
+                            <h3>Frequency Control Technician</h3>
+                            <p><strong>ANFR (Agence Nationale des Fréquences)</strong> — Paris</p>
+                            <p>Frequency spectrum monitoring and equipment labelling for the Paris 2024 Olympic and Paralympic Games.</p>
+                        </div>
+                    </div>
+
+                    <div class="cv-item">
+                        <div class="cv-item-meta">2020 – Present</div>
+                        <div class="cv-item-content">
+                            <h3>Private Tutoring</h3>
+                            <p><strong>Freelance</strong></p>
+                            <p>Private tutoring in mathematics and physics for middle school, high school and preparatory cycle students.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-column">
+                <section class="cv-section" style="margin-top: 0;">
+                    <h2><i class="fas fa-code"></i> Skills</h2>
+                    
+                    <div class="skills-category">
+                        <h3>Languages & AI</h3>
+                        <div class="tags" style="justify-content: flex-start;">
+                            <span class="tag">Python</span>
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">Jax</span>
+                            <span class="tag">TensorFlow</span>
+                            <span class="tag">C / Java / OCaml</span>
+                        </div>
+                    </div>
+
+                    <div class="skills-category" style="margin-top: 1.5rem;">
+                        <h3>Areas of Expertise</h3>
+                        <div class="tags" style="justify-content: flex-start;">
+                            <span class="tag">Deep Learning</span>
+                            <span class="tag">Computer Vision</span>
+                            <span class="tag">Generative Models</span>
+                            <span class="tag">Signal Processing</span>
+                            <span class="tag">NLP & LLMs</span>
+                        </div>
+                    </div>
+                    
+                    <div class="skills-category" style="margin-top: 1.5rem;">
+                        <h3>Languages</h3>
+                        <div class="tags" style="justify-content: flex-start;">
+                            <span class="tag">French (Native)</span>
+                            <span class="tag">English (C1/C2)</span>
+                            <span class="tag">Spanish (B1/B2)</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+        </div> <section class="cv-section" style="margin-top: 4rem;">
+            <h2><i class="fas fa-flask"></i> Projects & Challenges</h2>
+            
+            <div class="projects-grid">
+                
+                <div class="project-card-cv">
+                    <span class="project-date">2025</span>
+                    <h3>NCSN & Diffusion Models for Medical Imaging</h3>
+                    <p>Implementation of NCSN and Diffusion models. Evaluation of generation and inpainting capabilities on the MedMNIST benchmark.</p>
+                </div>
+
+                <div class="project-card-cv">
+                    <span class="project-date">2025</span>
+                    <h3>ALTeGraD Challenge: Molecular Graph Captioning</h3>
+                    <p>Development of a multimodal Deep Learning framework (GCN + SciBERT) with contrastive loss to align molecular graph embeddings and textual descriptions.</p>
+                </div>
+
+                <div class="project-card-cv">
+                    <span class="project-date">2025</span>
+                    <h3>Self-supervised Learning for Medical Imaging</h3>
+                    <p>Implementation of SimCLR and Barlow Twins methods. Evaluation of self-supervised learning effectiveness on the MedMNIST dataset.</p>
+                </div>
+
+                <div class="project-card-cv">
+                    <span class="project-date">2025</span>
+                    <h3>Challenge AI: IBM x Telecom</h3>
+                    <p>Fraudulent transaction classification on a 300k-row DataFrame (Random Forest, feature engineering). Ranked 3rd out of 25 teams (F1 score: 69%).</p>
+                </div>
+
+                <div class="project-card-cv">
+                    <span class="project-date">2025</span>
+                    <h3>Sign Language Recognition</h3>
+                    <p>Development of a sign language recognition prototype using the MediaPipe library and training of a Random Forest model.</p>
+                </div>
+
+                <div class="project-card-cv">
+                    <span class="project-date">2025</span>
+                    <h3>Exemplar-Based Patch Inpainting</h3>
+                    <p>Algorithmic implementation of the method detailed in the paper "Object Removal by Exemplar-Based Inpainting" (A. Criminisi et al.).</p>
+                </div>
+
+                <div class="project-card-cv">
+                    <span class="project-date">2024</span>
+                    <h3>Smart Remote Car & QR Code Navigation</h3>
+                    <p>Assembly (Raspberry Pi, motors), GPIO configuration, and Python code design for remote control and automatic navigation via beacon detection.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 5rem; margin-bottom: 2rem;">
+            <a href="assets/cv.pdf" download="CV_Abdennour_Kerboua.pdf" class="cta-button" style="padding: 1rem 2.5rem; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s ease;">
+                <i class="fas fa-download"></i> Download my CV (PDF)
+            </a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Abdennour Kerboua. Built with passion & pure code.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=20260722d"></script>
+    <script src="data.js?v=20260722d"></script>
+    <script src="script.js?v=20260722d"></script>
+</body>
+</html>

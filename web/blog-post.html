@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles Abdennour</title>
+    <link rel="stylesheet" href="style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#blog" class="active">Blog</a>
+            <a href="cv.html">CV</a>
+            <a href="portfolio.html" class="cta-button">Portfolio</a>
+        </div>
+    </nav>
+
+    <!-- Article content loaded dynamically -->
+    <article class="blog-post-container" id="blogPostContainer">
+        <div id="blogPostLoading" style="text-align: center; padding: 4rem 2rem; color: var(--text-light);">
+            <p>Loading article...</p>
+        </div>
+    </article>
+
+    <!-- 404 state (hidden by default) -->
+    <div id="blogPostNotFound" style="display: none; text-align: center; padding: 6rem 2rem;">
+        <div style="font-size: 1.2rem; color: var(--text-light); letter-spacing: 2px; margin-bottom: 1rem;">— · —</div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 1rem;">Article not found</h1>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">This article does not exist or has been deleted.</p>
+        <a href="index.html#blog" class="cta-button">← Back to articles</a>
+    </div>
+
+    <footer style="text-align: center; padding: 2rem;">
+        <p>&copy; 2025 Abdennour Kerboua. Built with passion & pure code.</p>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=20260722d"></script>
+    <script src="data.js?v=20260722d"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const container = document.getElementById('blogPostContainer');
+        const notFound = document.getElementById('blogPostNotFound');
+
+        const params = new URLSearchParams(window.location.search);
+        const postId = params.get('id');
+
+        if (!postId || typeof SiteData === 'undefined') {
+            container.style.display = 'none';
+            notFound.style.display = 'block';
+            return;
+        }
+
+        // Chercher l'article (async — Firestore ou localStorage)
+        const post = await SiteData.getBlogPostById(postId);
+
+        if (!post) {
+            container.style.display = 'none';
+            notFound.style.display = 'block';
+            return;
+        }
+
+        document.title = post.title + ' | Abdennour Kerboua';
+
+        // Build header
+        let headerHTML = '<header class="blog-header">'
+            + '<h1 class="article-title">' + post.title + '</h1>'
+            + '<div class="author-meta"><div class="meta-text">'
+            + '<span class="author-name">Abdennour Kerboua</span>'
+            + '<span class="post-date">' + (post.date || '') + (post.readTime ? ' · ' + post.readTime + ' read' : '') + '</span>'
+            + '</div></div></header>';
+
+        // Generate TOC from h2/h3 headings in content
+        let contentHTML = post.content || '<p style="color: var(--text-light); text-align: center;">Content coming soon...</p>';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = contentHTML;
+        const headings = tempDiv.querySelectorAll('h2, h3');
+        let tocHTML = '';
+        if (headings.length > 1) {
+            tocHTML = '<nav class="blog-toc"><h2>Table of Contents</h2><ul>';
+            headings.forEach(function(h, i) {
+                const id = 'section-' + i;
+                h.id = id;
+                const cls = h.tagName === 'H3' ? ' class="toc-sub"' : '';
+                tocHTML += '<li' + cls + '><a href="#' + id + '">' + h.textContent + '</a></li>';
+            });
+            tocHTML += '</ul></nav>';
+            contentHTML = tempDiv.innerHTML;
+        }
+
+        container.innerHTML = headerHTML
+            + tocHTML
+            + '<div class="article-content">'
+            + contentHTML
+            + '</div>'
+            + '<div class="blog-footer">'
+            + '<h3>About the author</h3>'
+            + '<p>Abdennour Kerboua, research student in Deep Learning.</p>'
+            + '<a href="index.html#blog" class="back-link">&larr; Back to articles</a>'
+            + '</div>';
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([container]).catch(function(){});
+        }
+        if (window.hljs) {
+            container.querySelectorAll('pre code').forEach(function(block) {
+                hljs.highlightElement(block);
+            });
+        }
+    });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="script.js?v=20260722d"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Supervised Learning | Abdennour Kerboua</title>
+    
+    <link rel="stylesheet" href="../../style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <link rel="stylesheet" href="../../project-minimal.css?v=20260821b">
+</head>
+<body>
+
+    <nav>
+        <a href="../../index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links"><a href="../../index.html#work">work</a><a href="../../index.html#education">education</a><a href="../../index.html#experience">experience</a><a href="../../index.html#links">links</a></div>
+    </nav>
+
+    <div class="container">
+        <article class="project-detail">
+
+            <header class="project-header">
+                <h1>Apprentissage Auto-Supervisé (SSL) pour la Vision</h1>
+                <div class="tags">
+                    <span class="tag">PyTorch</span>
+                    <span class="tag">SimCLR</span>
+                    <span class="tag">Computer Vision</span>
+                    <span class="tag">Unsupervised</span>
+                </div>
+            </header>
+
+            <img src="simclr.png" alt="Architecture SimCLR" class="project-hero-img">
+
+            <nav class="project-toc">
+                <h2>Sommaire</h2>
+                <ul>
+                    <li><a href="#intro">1. Introduction</a></li>
+                    <li><a href="#objectif">2. Objectif & Méthodologie</a></li>
+                    <li><a href="#implementation">3. Implémentation</a></li>
+                    <li><a href="#resultats">4. Résultats</a></li>
+                </ul>
+            </nav>
+
+            <section class="content">
+                
+                <h2 id="intro">1. Introduction</h2>
+                <p>
+                    L'annotation de données est coûteuse et chronophage. Ce projet explore les techniques de <strong>Self-Supervised Learning (SSL)</strong>, permettant d'apprendre des représentations visuelles robustes sans aucune étiquette (label), en utilisant uniquement la structure inhérente des données.
+                </p>
+
+                <h2 id="objectif">2. Objectif & Méthodologie</h2>
+                <p>
+                    L'objectif est d'entraîner un encodeur (ResNet-18/50) capable de projeter des images dans un espace latent où les images sémantiquement proches sont géométriquement proches. J'ai implémenté une approche de type <strong>Contrastive Learning (SimCLR)</strong>.
+                </p>
+
+                <h3>Le pipeline d'augmentation</h3>
+                <p>
+                    Le cœur de la méthode repose sur la création de deux vues augmentées \(\tilde{x}_i\) et \(\tilde{x}_j\) d'une même image \(x\). Les augmentations incluent :
+                </p>
+                <ul>
+                    <li>Random Resized Crop</li>
+                    <li>Color Jitter (Distorsion de couleur)</li>
+                    <li>Gaussian Blur</li>
+                </ul>
+
+                <h3>Formalisation Mathématique : NT-Xent Loss</h3>
+                <p>
+                    Nous cherchons à maximiser la similarité entre les paires positives (augmenations d'une même image) tout en minimisant la similarité avec les paires négatives (autres images du batch).
+                </p>
+                <p>
+                    Soit \(z_i\) et \(z_j\) les projections des vues augmentées. La fonction de perte utilisée est la <strong>Normalized Temperature-scaled Cross Entropy Loss</strong> :
+                </p>
+
+                $$ \mathcal{L}_{i,j} = -\log \frac{\exp(\text{sim}(z_i, z_j)/\tau)}{\sum_{k=1}^{2N} \mathbb{1}_{[k \neq i]} \exp(\text{sim}(z_i, z_k)/\tau)} $$
+
+                <p>
+                    Où :
+                    <ul>
+                        <li>\(\text{sim}(u, v) = u^T v / (\|u\| \|v\|)\) est la similarité cosinus.</li>
+                        <li>\(\tau\) est un paramètre de température scalaire.</li>
+                        <li>\(N\) est la taille du batch.</li>
+                    </ul>
+                </p>
+
+                <h2 id="implementation">3. Implémentation</h2>
+                <p>Le projet est entièrement codé en <strong>Python</strong> avec <strong>PyTorch</strong>. Voici un extrait de la classe gérant les augmentations :</p>
+
+                <pre><code class="language-python">
+import torch.nn as nn
+import torchvision.transforms as T
+
+class SimCLRTransform:
+    def __init__(self, size=224):
+        self.transform = T.Compose([
+            T.RandomResizedCrop(size=size),
+            T.RandomHorizontalFlip(),
+            T.RandomApply([
+                T.ColorJitter(0.8, 0.8, 0.8, 0.2)
+            ], p=0.8),
+            T.RandomGrayscale(p=0.2),
+            T.ToTensor()
+        ])
+
+    def __call__(self, x):
+        # Retourne deux vues de la même image
+        return self.transform(x), self.transform(x)
+                </code></pre>
+
+                <h2 id="resultats">4. Résultats (Linear Evaluation Protocol)</h2>
+                <p>
+                    Pour évaluer la qualité des représentations, nous avons figé l'encodeur et entraîné un classifieur linéaire simple sur CIFAR-10.
+                </p>
+                <div class="project-callout">
+                    <strong>Performance :</strong> Le modèle atteint une précision de <strong>XX.X%</strong> (Top-1) sur le set de test, comparable à un apprentissage supervisé classique, mais en utilisant 10x moins d'étiquettes pour le fine-tuning.
+                </div>
+
+            </section>
+
+            <div class="project-actions">
+                <a href="https://github.com/AbdennourKerPro/SelfSupervisedLearningProject" target="_blank" class="github-btn">⚡ Voir le code sur GitHub</a>
+                <a href="../../portfolio.html" class="back-to-portfolio">&larr; Retour au Portfolio</a>
+            </div>
+
+        </article>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Abdennour Kerboua.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebase-config.js?v=20260722d"></script>
+    <script src="../../data.js?v=20260722d"></script>
+    <script src="../../script.js?v=20260722d"></script>
+</body>
+</html>

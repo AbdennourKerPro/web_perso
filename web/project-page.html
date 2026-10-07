@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+    <link rel="stylesheet" href="style.css?v=20260722d">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Abdennour Kerboua</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#blog">Blog</a>
+            <a href="cv.html">CV</a>
+            <a href="portfolio.html" class="cta-button">Portfolio</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Project content loaded dynamically -->
+        <article class="project-detail" id="projectContainer">
+            <div id="projectLoading" style="text-align: center; padding: 4rem 2rem; color: var(--text-light);">
+                <p>Loading project...</p>
+            </div>
+        </article>
+    </div>
+
+    <!-- 404 state (hidden by default) -->
+    <div id="projectNotFound" style="display: none; text-align: center; padding: 6rem 2rem;">
+        <div style="font-size: 1.2rem; color: var(--text-light); letter-spacing: 2px; margin-bottom: 1rem;">— · —</div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 1rem;">Project not found</h1>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">This project does not exist or has been deleted.</p>
+        <a href="portfolio.html" class="cta-button">← Back to portfolio</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Abdennour Kerboua. Built with passion & pure code.</p>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=20260722d"></script>
+    <script src="data.js?v=20260722d"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const container = document.getElementById('projectContainer');
+        const notFound = document.getElementById('projectNotFound');
+
+        const params = new URLSearchParams(window.location.search);
+        const projectId = params.get('id');
+
+        if (!projectId || typeof SiteData === 'undefined') {
+            container.style.display = 'none';
+            notFound.style.display = 'block';
+            return;
+        }
+
+        // Chercher le projet (async — Firestore ou localStorage)
+        const proj = await SiteData.getProjectById(projectId);
+
+        if (!proj) {
+            container.style.display = 'none';
+            notFound.style.display = 'block';
+            return;
+        }
+
+        document.title = proj.title + ' | Abdennour Kerboua';
+
+        var tagsHTML = (proj.tags || []).map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('');
+
+        container.innerHTML = '<header class="project-header">'
+            + '<h1>' + proj.title + '</h1>'
+            + (tagsHTML ? '<div class="tags">' + tagsHTML + '</div>' : '')
+            + '</header>'
+            + (proj.image ? '<img src="' + proj.image + '" alt="Project preview" class="project-hero-img">' : '')
+            + '<section class="content">'
+            + (proj.content || '<p>' + (proj.description || '') + '</p>')
+            + '</section>'
+            + '<div class="project-actions">'
+            + (proj.github ? '<a href="' + proj.github + '" target="_blank" class="github-btn">View code on GitHub</a>' : '')
+            + '<a href="portfolio.html" class="back-to-portfolio">&larr; Back to Portfolio</a>'
+            + '</div>';
+    });
+    </script>
+    <script src="script.js?v=20260722d"></script>
+</body>
+</html>

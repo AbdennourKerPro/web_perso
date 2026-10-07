@@ -1,0 +1,372 @@
+@import url("minimal.css?v=20260821b");
+
+/* Detail pages keep their content, but use the same calm visual language as the home page. */
+:root {
+    --bg-color: #fbfaf7;
+    --bg-secondary: #f6f5f0;
+    --surface: #fbfaf7;
+    --surface-2: #f6f5f0;
+    --white: #fbfaf7;
+    --on-accent: #26302d;
+    --text-dark: #26302d;
+    --text-medium: #69736e;
+    --text-light: #8c9690;
+    --accent: #6f9279;
+    --accent-2: #9b89bf;
+    --accent-3: #829fb6;
+    --accent-dark: #587861;
+    --accent-subtle: rgba(111, 146, 121, 0.11);
+    --accent-glow: rgba(111, 146, 121, 0.15);
+    --border-color: #dce2db;
+    --border-dark: #cbd4ca;
+    --shadow: none;
+    --shadow-hover: none;
+}
+
+body {
+    background: #fbfaf7 !important;
+    color: #26302d !important;
+    font-family: var(--body) !important;
+}
+
+body::before,
+body::after,
+.scroll-progress,
+.nav-tools { display: none !important; }
+
+body > nav {
+    position: sticky !important;
+    top: 0;
+    z-index: 30;
+    min-height: 72px !important;
+    padding: 0 max(1.5rem, calc((100vw - 900px) / 2)) !important;
+    border-bottom: 1px solid #dce2db !important;
+    background: rgba(251, 250, 247, 0.88) !important;
+    box-shadow: none !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+body > nav .logo {
+    color: #26302d !important;
+    font-family: var(--display) !important;
+    font-size: 1.35rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.06em !important;
+}
+
+body > nav .logo::before { display: none !important; }
+
+body > nav .nav-links {
+    gap: 1rem !important;
+}
+
+body > nav .nav-links a,
+body > nav .nav-links a.cta-button {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #69736e !important;
+    font-family: var(--mono) !important;
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    text-decoration: none !important;
+    text-transform: lowercase !important;
+    transform: none !important;
+}
+
+body > nav .nav-links a::after,
+body > nav .nav-links a.cta-button::after { display: none !important; }
+
+body > nav .nav-links a:hover,
+body > nav .nav-links a.cta-button:hover {
+    color: #26302d !important;
+    text-decoration: underline !important;
+    text-underline-offset: 0.26em;
+}
+
+.container {
+    width: min(860px, calc(100% - 3rem)) !important;
+    margin: 0 auto !important;
+    padding: clamp(4.2rem, 9vw, 7rem) 0 !important;
+}
+
+.project-detail {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.project-header {
+    margin: 0 0 3.25rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    text-align: left !important;
+}
+
+.project-header h1,
+.project-detail > h1 {
+    max-width: 13ch;
+    margin: 0 0 1rem !important;
+    color: #26302d !important;
+    font-family: var(--display) !important;
+    font-size: clamp(3rem, 7vw, 5.8rem) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.075em !important;
+    line-height: 0.9 !important;
+}
+
+.project-header .kicker,
+.evidentia .kicker,
+.project-date {
+    margin: 0 0 0.9rem !important;
+    color: #8c9690 !important;
+    font-family: var(--mono) !important;
+    font-size: 0.67rem !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+}
+
+.project-header .subtitle,
+.evidentia .subtitle {
+    max-width: 60ch !important;
+    margin: 0 !important;
+    color: #69736e !important;
+    font-family: var(--display) !important;
+    font-size: clamp(1.15rem, 2.4vw, 1.6rem) !important;
+    letter-spacing: -0.025em !important;
+    line-height: 1.35 !important;
+}
+
+.tags,
+.project-header .tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.2rem 0.75rem !important;
+    margin: 1.3rem 0 0 !important;
+}
+
+.tag,
+.project-header .tag {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #8c9690 !important;
+    font-family: var(--mono) !important;
+    font-size: 0.66rem !important;
+    font-weight: 400 !important;
+    transform: none !important;
+}
+
+.tag::after { content: "·"; margin-left: 0.75rem; }
+.tag:last-child::after { display: none; }
+
+.project-hero-img {
+    width: 100% !important;
+    max-height: none !important;
+    margin: 0 0 3rem !important;
+    border: 1px solid #dce2db !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.project-toc,
+.evidentia .toc { display: none !important; }
+
+.content {
+    max-width: 720px !important;
+    margin: 0 !important;
+}
+
+.content > h2,
+.evidentia .content > h2 {
+    margin: 3.6rem 0 1.05rem !important;
+    color: #26302d !important;
+    font-family: var(--display) !important;
+    font-size: clamp(1.8rem, 3vw, 2.6rem) !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.055em !important;
+    line-height: 1.02 !important;
+}
+
+.content h3 {
+    margin: 2rem 0 0.65rem !important;
+    color: #26302d !important;
+    font-family: var(--display) !important;
+    font-size: 1.35rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.035em !important;
+}
+
+.content p,
+.content li,
+.evidentia .content p,
+.evidentia .content li {
+    color: #69736e !important;
+    font-size: 0.96rem !important;
+    line-height: 1.72 !important;
+}
+
+.content p { margin: 0 0 1rem !important; }
+.content ul,
+.content ol { padding-left: 1.25rem !important; }
+
+.project-callout,
+.callout,
+.evidentia .callout,
+.evidentia .callout.caution,
+.card,
+.evidentia .card,
+.evidentia .metric,
+.evidentia .flow li {
+    min-height: 0 !important;
+    margin: 1.1rem 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.project-callout {
+    color: #69736e !important;
+    font-size: 0.96rem !important;
+    line-height: 1.72 !important;
+}
+
+.evidentia .stats {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.35rem 1.15rem !important;
+    margin: 1.35rem 0 0 !important;
+}
+
+.evidentia .metric {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 0.28rem !important;
+}
+
+.evidentia .value {
+    display: inline !important;
+    margin: 0 !important;
+    color: #26302d !important;
+    font-family: var(--display) !important;
+    font-size: 1.45rem !important;
+    font-weight: 600 !important;
+}
+
+.evidentia .label {
+    color: #8c9690 !important;
+    font-family: var(--mono) !important;
+    font-size: 0.62rem !important;
+    line-height: 1.35 !important;
+    text-transform: uppercase !important;
+}
+
+.evidentia .meta {
+    margin: 1rem 0 0 !important;
+    color: #69736e !important;
+    font-size: 0.82rem !important;
+}
+
+.evidentia .status {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #69736e !important;
+    font-family: var(--mono) !important;
+    font-size: 0.68rem !important;
+    font-weight: 400 !important;
+}
+
+.evidentia .status::before { display: none !important; }
+
+.evidentia .flow,
+.evidentia .grid {
+    display: block !important;
+    margin: 1rem 0 !important;
+    padding: 0 0 0 1.2rem !important;
+}
+
+.evidentia .flow { list-style: decimal !important; }
+.evidentia .flow li::before { display: none !important; }
+.evidentia .flow span { color: #69736e !important; font-size: 0.96rem !important; }
+.evidentia .eyebrow { color: #8c9690 !important; font-family: var(--mono) !important; font-size: 0.65rem !important; }
+.evidentia .question { margin: 0.55rem 0 !important; padding: 0 !important; background: transparent !important; }
+
+pre {
+    overflow-x: auto !important;
+    padding: 1rem !important;
+    border: 1px solid #dce2db !important;
+    border-radius: 0 !important;
+    background: #f6f5f0 !important;
+    box-shadow: none !important;
+}
+
+.actions,
+.evidentia .actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem 1.25rem !important;
+    margin: 3.5rem 0 0 !important;
+}
+
+.github-btn,
+.back-to-portfolio,
+.evidentia .github-btn {
+    display: inline !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #26302d !important;
+    font-family: var(--body) !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    text-decoration: underline !important;
+    text-decoration-color: #adc4b1 !important;
+    text-decoration-thickness: 0.08em !important;
+    text-underline-offset: 0.18em !important;
+    transform: none !important;
+}
+
+footer {
+    width: min(860px, calc(100% - 3rem)) !important;
+    margin: 0 auto !important;
+    padding: 2rem 0 3.5rem !important;
+    border-top: 1px solid #dce2db !important;
+    background: transparent !important;
+    color: #8c9690 !important;
+    font-family: var(--mono) !important;
+    font-size: 0.65rem !important;
+    text-align: left !important;
+}
+
+footer p { margin: 0 !important; }
+
+@media (max-width: 680px) {
+    body > nav { min-height: 64px !important; padding: 0 1rem !important; }
+    body > nav .nav-links { gap: 0.65rem !important; }
+    .container { width: min(100% - 2rem, 860px) !important; padding: 4rem 0 !important; }
+    .project-header h1,
+    .project-detail > h1 { font-size: clamp(3rem, 14vw, 4.7rem) !important; }
+    .evidentia .stats { display: block !important; }
+    .evidentia .metric { margin: 0.4rem 0 !important; }
+}

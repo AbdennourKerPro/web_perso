@@ -1,0 +1,16 @@
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.codex/
+
+# Secrets éventuels
+.env
+.env.*
+*.pem
+*.key
+
+# Vercel / Node
+.vercel/
+node_modules/

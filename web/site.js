@@ -53,6 +53,23 @@
     // Project filters by skill
     const filterButtons = [...document.querySelectorAll(".filter-bar button")];
     const projectCards = [...document.querySelectorAll(".project-trigger")];
+    const counters = new Map();
+
+    // Windows of the cards the filter currently shows, in page order
+    const visibleDialogs = () => projectCards
+        .filter(card => !card.hidden)
+        .map(card => document.getElementById(card.dataset.dialog))
+        .filter(Boolean);
+
+    const cardFor = dialog => projectCards.find(card => card.dataset.dialog === dialog.id);
+
+    const updateCounters = () => {
+        const list = visibleDialogs();
+        counters.forEach((counter, dialog) => {
+            const position = list.indexOf(dialog);
+            counter.textContent = position === -1 ? "" : `${position + 1} / ${list.length}`;
+        });
+    };
 
     filterButtons.forEach(button => {
         button.addEventListener("click", () => {
@@ -62,6 +79,7 @@
                 const tags = card.dataset.tags?.split(" ") ?? [];
                 card.hidden = filter !== "all" && !tags.includes(filter);
             });
+            updateCounters();
         });
     });
 
@@ -77,9 +95,13 @@
     };
 
     const step = (dialog, offset) => {
-        const index = dialogs.indexOf(dialog);
-        const target = dialogs[(index + offset + dialogs.length) % dialogs.length];
+        const list = visibleDialogs();
+        const index = list.indexOf(dialog);
+        if (index === -1 || list.length < 2) return;
+        const target = list[(index + offset + list.length) % list.length];
         dialog.close();
+        // Focus the target's card first, so closing that window returns focus to it
+        cardFor(target)?.focus();
         openDialog(target);
     };
 
@@ -93,8 +115,13 @@
     dialogs.forEach((dialog, index) => {
         dialog.querySelector(".modal-close")?.addEventListener("click", () => dialog.close());
 
+        // Close on a click on the backdrop only: the dialog's padding and gaps also hit the dialog itself
         dialog.addEventListener("click", event => {
-            if (event.target === dialog) dialog.close();
+            if (event.target !== dialog) return;
+            const box = dialog.getBoundingClientRect();
+            const inside = event.clientX >= box.left && event.clientX <= box.right
+                && event.clientY >= box.top && event.clientY <= box.bottom;
+            if (!inside) dialog.close();
         });
 
         // Closing with a switch to the next window leaves the hash in place
@@ -114,7 +141,7 @@
             previous.addEventListener("click", () => step(dialog, -1));
 
             const counter = document.createElement("span");
-            counter.textContent = `${index + 1} / ${dialogs.length}`;
+            counters.set(dialog, counter);
 
             const next = document.createElement("button");
             next.type = "button";
@@ -125,6 +152,8 @@
             dialog.append(nav);
         }
     });
+
+    updateCounters();
 
     document.addEventListener("keydown", event => {
         const open = dialogs.find(dialog => dialog.open);
@@ -140,17 +169,37 @@
     window.addEventListener("hashchange", openFromHash);
     openFromHash();
 
+    // Sections fade in as they scroll into view; without IntersectionObserver they simply stay visible
+    if ("IntersectionObserver" in window) {
+        const revealer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add("is-visible");
+                revealer.unobserve(entry.target);
+            });
+        }, { rootMargin: "0px 0px -10% 0px" });
+
+        document.querySelectorAll(".section").forEach(section => {
+            section.classList.add("reveal");
+            revealer.observe(section);
+        });
+    }
+
     // Copy the main contact address
     document.querySelectorAll(".copy-email").forEach(button => {
+        const label = button.textContent;
+        let timer;
         button.addEventListener("click", async () => {
-            const label = button.textContent;
+            let message = "erreur";
             try {
                 await navigator.clipboard.writeText(button.dataset.copy);
-                button.textContent = "copié";
+                message = "copié";
             } catch (error) {
-                button.textContent = "erreur";
+                // keep "erreur"
             }
-            setTimeout(() => { button.textContent = label; }, 1500);
+            button.textContent = message;
+            clearTimeout(timer);
+            timer = setTimeout(() => { button.textContent = label; }, 1500);
         });
     });
 })();

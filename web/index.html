@@ -13,9 +13,26 @@
     <meta name="twitter:card" content="summary">
     <title>abdennour kerboua</title>
     <link rel="icon" type="image/png" href="assets/kanagawa-wave.png?v=20260821a">
+    <script>
+        try { var t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+    </script>
     <link rel="stylesheet" href="minimal.css?v=20260831a">
 </head>
 <body>
+    <nav class="jump-nav" aria-label="Sections">
+        <div class="jump-inner">
+            <a class="jump-brand" href="#top">ak.</a>
+            <div class="jump-links">
+                <a href="#experience">Experience</a>
+                <a href="#work">Projects</a>
+                <a href="#education">Education</a>
+                <a href="#notes">Notes</a>
+                <a href="#playlist">Playlist</a>
+                <a href="#links">Links</a>
+            </div>
+            <button class="theme-toggle" type="button">thème</button>
+        </div>
+    </nav>
     <main class="site">
         <header class="masthead" id="top">
             <div class="name-block">
@@ -26,7 +43,7 @@
                 <p>Paris, France</p>
                 <p>Research Engineer @ Idemia</p>
                 <p class="identity-line">[ vision researcher <span>·</span> humanist <span>·</span> gamer / reader <span>·</span> optimist ]</p>
-                <p class="contact-line"><a href="mailto:contact@abdennour.tech">contact@abdennour.tech</a><button class="copy-email" type="button" data-copy="contact@abdennour.tech" aria-label="Copier l'adresse contact@abdennour.tech">copier</button><span>|</span><a href="mailto:abdennour.kerboua.pro@gmail.com">abdennour.kerboua.pro@gmail.com</a><span>|</span><a href="assets/cv.pdf" download="CV_Abdennour_Kerboua.pdf">résumé ↗</a></p>
+                <p class="contact-line"><span class="contact-item"><a href="mailto:contact@abdennour.tech">contact@abdennour.tech</a><button class="copy-email" type="button" data-copy="contact@abdennour.tech" aria-label="Copier l'adresse contact@abdennour.tech">copier</button></span><span>|</span><a href="mailto:abdennour.kerboua.pro@gmail.com">abdennour.kerboua.pro@gmail.com</a><span>|</span><a href="assets/cv.pdf" download="CV_Abdennour_Kerboua.pdf">résumé ↗</a></p>
             </div>
         </header>
 
@@ -54,52 +71,63 @@
 
         <section class="section" id="work" aria-labelledby="work-title">
             <h2 id="work-title">Projects</h2>
-            <div class="section-body project-grid">
-                <button class="project-trigger" type="button" data-dialog="referai-dialog">
+            <div class="section-body">
+                <div class="filter-bar" role="group" aria-label="Filtrer les projets">
+                    <button type="button" data-filter="all" aria-pressed="true">Tous</button>
+                    <button type="button" data-filter="vision" aria-pressed="false">Vision</button>
+                    <button type="button" data-filter="nlp" aria-pressed="false">NLP</button>
+                    <button type="button" data-filter="rag" aria-pressed="false">RAG</button>
+                    <button type="button" data-filter="rl" aria-pressed="false">RL</button>
+                    <button type="button" data-filter="robotics" aria-pressed="false">Robotique</button>
+                    <button type="button" data-filter="data" aria-pressed="false">Données</button>
+                </div>
+                <div class="project-grid">
+                <button class="project-trigger" type="button" data-dialog="referai-dialog" data-tags="vision">
                     <strong>ReferAI</strong>
                     <span>football video to referee-ready game state</span>
                     <em><i>YOLO11</i><i>ByteTrack</i><i>TrackEval</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="drawing-clouds-dialog">
+                <button class="project-trigger" type="button" data-dialog="drawing-clouds-dialog" data-tags="rl">
                     <strong>Drawing Clouds</strong>
                     <span>reinforcement learning for cloud-based drawing</span>
                     <em><i>PPO</i><i>PyTorch</i><i>CNN</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="evidentia-dialog">
+                <button class="project-trigger" type="button" data-dialog="evidentia-dialog" data-tags="nlp rag">
                     <strong>Evidentia</strong>
                     <span>evidence-first scientific RAG</span>
                     <em><i>Agentic RAG</i><i>Qdrant</i><i>LangGraph</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="molecular-dialog">
+                <button class="project-trigger" type="button" data-dialog="molecular-dialog" data-tags="nlp">
                     <strong>Molecular Graph Captioning</strong>
                     <span>molecular graphs and scientific text</span>
                     <em><i>GCN</i><i>SciBERT</i><i>NLP</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="ssl-dialog">
+                <button class="project-trigger" type="button" data-dialog="ssl-dialog" data-tags="vision">
                     <strong>Self-supervised Medical Imaging</strong>
                     <span>learning representations without labels</span>
                     <em><i>PyTorch</i><i>SimCLR</i><i>MedMNIST</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="fraud-dialog">
+                <button class="project-trigger" type="button" data-dialog="fraud-dialog" data-tags="data">
                     <strong>IBM x Telecom Fraud Detection</strong>
                     <span>fraud detection across 300k transactions</span>
                     <em><i>Python</i><i>Random Forest</i><i>F1 69%</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="sign-dialog">
+                <button class="project-trigger" type="button" data-dialog="sign-dialog" data-tags="vision">
                     <strong>Sign Language Recognition</strong>
                     <span>live hand-landmark classification</span>
                     <em><i>MediaPipe</i><i>Computer Vision</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="inpainting-dialog">
+                <button class="project-trigger" type="button" data-dialog="inpainting-dialog" data-tags="vision">
                     <strong>Exemplar Patch Inpainting</strong>
                     <span>object removal from image context</span>
                     <em><i>Python</i><i>Image Processing</i></em>
                 </button>
-                <button class="project-trigger" type="button" data-dialog="car-dialog">
+                <button class="project-trigger" type="button" data-dialog="car-dialog" data-tags="robotics">
                     <strong>QR Navigation Car</strong>
                     <span>visual waypoints for a small robot</span>
                     <em><i>Raspberry Pi</i><i>Python</i><i>Embedded</i></em>
                 </button>
+                </div>
             </div>
         </section>
 

@@ -2,6 +2,9 @@
 // renders one of its HTML pages in place. Nothing readable is served in clear.
 (function () {
   const page = document.documentElement.dataset.page; // 'index.html' or 'presenter.html'
+  const form = document.getElementById('unlock');
+  const input = document.getElementById('password');
+  const msg = document.getElementById('msg');
 
   async function decrypt(password) {
     const res = await fetch('/soutenance/deck.bin', { cache: 'no-cache' });
@@ -37,39 +40,68 @@
     for (const name of Object.keys(text).filter(n => n.endsWith('.html'))) {
       pages[name] = swap(text[name])
         .replace(/<script src="([^"]+)"><\/script>/g, (m, src) =>
-          text[src] ? '<script>' + swap(text[src]).replace(/<\/script/gi, '<\\/script') + '</script>' : m)
+          text[src] ? '<script>' + swap(text[src]).replace(/<\/script/gi, '<\/script') + '</script>' : m)
         .replace(/<head>/i, '<head><base href="/soutenance/"><meta name="robots" content="noindex, nofollow">');
     }
     return pages;
   }
 
+  // Writes the decrypted page and, on the index page, answers requests from
+  // the presenter window opened with the P key.
   function show(pages) {
     window.__soutenance = pages;
-    const html = pages[page];
     document.open();
-    document.write(html);
+    document.write(pages[page]);
     document.close();
+    window.addEventListener('message', e => {
+      if (e.origin !== location.origin || !e.source || !window.__soutenance) return;
+      if (e.data && e.data.type === 'soutenance-request') {
+        e.source.postMessage({ type: 'soutenance-pages', pages: window.__soutenance }, location.origin);
+      }
+    });
   }
 
-  // Presenter window opened from the unlocked deck: reuse what it already decrypted.
-  try {
-    if (window.opener && window.opener.__soutenance) { show(window.opener.__soutenance); return; }
-  } catch (e) { /* different origin: ask for the password */ }
+  // Presenter window: ask the deck window for the pages it already decrypted,
+  // so the password is only asked when the presenter is opened on its own.
+  function askOpener() {
+    return new Promise(resolve => {
+      const timer = setTimeout(() => { window.removeEventListener('message', onReply); resolve(null); }, 1500);
+      function onReply(e) {
+        if (e.origin !== location.origin || !e.data || e.data.type !== 'soutenance-pages') return;
+        clearTimeout(timer);
+        window.removeEventListener('message', onReply);
+        resolve(e.data.pages);
+      }
+      window.addEventListener('message', onReply);
+      try { window.opener.postMessage({ type: 'soutenance-request' }, location.origin); }
+      catch (e) { clearTimeout(timer); window.removeEventListener('message', onReply); resolve(null); }
+    });
+  }
 
-  const form = document.getElementById('unlock');
-  const input = document.getElementById('password');
-  const msg = document.getElementById('msg');
-  input.focus();
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    msg.textContent = 'Déverrouillage…';
-    form.querySelector('button').disabled = true;
-    try {
-      show(build(await decrypt(input.value)));
-    } catch (err) {
-      msg.textContent = err.message === 'fetch' ? 'Présentation indisponible.' : 'Mot de passe incorrect.';
-      form.querySelector('button').disabled = false;
-      input.select();
-    }
-  });
+  function askPassword() {
+    form.hidden = false;
+    input.focus();
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      msg.textContent = 'Déverrouillage…';
+      form.querySelector('button').disabled = true;
+      try {
+        show(build(await decrypt(input.value)));
+      } catch (err) {
+        msg.textContent = err.message === 'fetch' ? 'Présentation indisponible.' : 'Mot de passe incorrect.';
+        form.querySelector('button').disabled = false;
+        input.select();
+      }
+    });
+  }
+
+  if (page === 'presenter.html' && window.opener) {
+    msg.textContent = 'Ouverture de la vue présentateur…';
+    askOpener().then(pages => {
+      if (pages) show(pages);
+      else { msg.textContent = ''; askPassword(); }
+    });
+  } else {
+    askPassword();
+  }
 })();

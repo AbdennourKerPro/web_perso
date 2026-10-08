@@ -185,6 +185,16 @@
         });
     }
 
+    // Now: switch the Spotify player between the chosen playlists
+    const playerTabs = [...document.querySelectorAll(".player-tabs button")];
+    const player = document.getElementById("spotify-player");
+    playerTabs.forEach(button => {
+        button.addEventListener("click", () => {
+            playerTabs.forEach(other => other.setAttribute("aria-pressed", String(other === button)));
+            if (player) player.src = button.dataset.src;
+        });
+    });
+
     // Copy the main contact address
     document.querySelectorAll(".copy-email").forEach(button => {
         const label = button.textContent;

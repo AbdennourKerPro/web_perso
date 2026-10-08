@@ -3,5 +3,14 @@
   "framework": null,
   "buildCommand": null,
   "installCommand": null,
-  "outputDirectory": "web"
+  "outputDirectory": "web",
+  "headers": [
+    {
+      "source": "/soutenance(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "Cache-Control", "value": "no-cache" }
+      ]
+    }
+  ]
 }

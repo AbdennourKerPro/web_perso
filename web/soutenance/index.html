@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr" data-page="index.html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<base href="/soutenance/">
+<title>Soutenance</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: #111; color: #ddd; font: 16px system-ui, sans-serif;
+         display: flex; align-items: center; justify-content: center; padding: 0 16px; }
+  form { display: flex; flex-direction: column; gap: 12px; width: min(320px, 100%); }
+  input, button { font: inherit; padding: 10px 12px; border-radius: 6px; border: 1px solid #444; }
+  input { background: #1c1c1c; color: #eee; }
+  button { background: #e0802b; color: #111; border-color: #e0802b; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  #msg { min-height: 1.2em; color: #f0a35e; font-size: 14px; }
+</style>
+</head>
+<body>
+<form id="unlock" autocomplete="off">
+  <label for="password">Mot de passe</label>
+  <input id="password" type="password" required>
+  <button type="submit">Ouvrir</button>
+  <div id="msg" role="status"></div>
+</form>
+<script src="/soutenance/loader.js"></script>
+</body>
+</html>

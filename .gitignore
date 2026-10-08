@@ -14,3 +14,7 @@ Thumbs.db
 # Vercel / Node
 .vercel/
 node_modules/
+
+# Présentation de soutenance : source en clair, jamais commitée
+# (seul web/soutenance/deck.bin, chiffré, est publié)
+/soutenance/

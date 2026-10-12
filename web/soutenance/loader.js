@@ -2,12 +2,13 @@
 // renders one of its HTML pages in place. Nothing readable is served in clear.
 (function () {
   const page = document.documentElement.dataset.page; // 'index.html' or 'presenter.html'
+  const deckBase = document.documentElement.dataset.base; // '/soutenance/' or '/interview-pres/'
   const form = document.getElementById('unlock');
   const input = document.getElementById('password');
   const msg = document.getElementById('msg');
 
   async function decrypt(password) {
-    const res = await fetch('/soutenance/deck.bin', { cache: 'no-cache' });
+    const res = await fetch(deckBase + 'deck.bin', { cache: 'no-cache' });
     if (!res.ok) throw new Error('fetch');
     const buf = new Uint8Array(await res.arrayBuffer());
     const salt = buf.slice(5, 21), iv = buf.slice(21, 33), data = buf.slice(33);
@@ -41,7 +42,7 @@
       pages[name] = swap(text[name])
         .replace(/<script src="([^"]+)"><\/script>/g, (m, src) =>
           text[src] ? '<script>' + swap(text[src]).replace(/<\/script/gi, '<\/script') + '</script>' : m)
-        .replace(/<head>/i, '<head><base href="/soutenance/"><meta name="robots" content="noindex, nofollow">');
+        .replace(/<head>/i, '<head><base href="' + deckBase + '"><meta name="robots" content="noindex, nofollow">');
     }
     return pages;
   }

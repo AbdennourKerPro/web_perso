@@ -2,7 +2,7 @@
 // file served at abdennour.tech/soutenance. The repository is public, so only
 // the ciphertext may be committed; the password never leaves this machine.
 //
-// Usage:  node scripts/encrypt-soutenance.mjs
+// Usage:  node scripts/encrypt-soutenance.mjs [source folder] [published folder]
 //         (asks for the password; or set SOUTENANCE_PASSWORD in the environment)
 //
 // Format of web/soutenance/deck.bin:
@@ -16,9 +16,13 @@ import { join, relative, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import readline from 'node:readline';
 
+// Each deck is a pair: source folder -> published folder under web/.
+//   node scripts/encrypt-soutenance.mjs                             soutenance -> web/soutenance
+//   node scripts/encrypt-soutenance.mjs interview_html interview-pres
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SRC = join(ROOT, 'soutenance');
-const OUT = join(ROOT, 'web', 'soutenance', 'deck.bin');
+const [srcName = 'soutenance', outName = 'soutenance'] = process.argv.slice(2);
+const SRC = join(ROOT, srcName);
+const OUT = join(ROOT, 'web', outName, 'deck.bin');
 const ITERATIONS = 600000;
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png',
   '.gif': 'image/gif', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',

@@ -46,6 +46,25 @@
 
         a.chip:hover { color: var(--ink); }
         .chip.hard { color: #a14d3a; border-color: #d9b2a6; }
+        .chip.easy { color: #5d7a4a; border-color: #b9c8ac; }
+
+        .trace {
+            width: 100%;
+            margin: 1.4rem 0;
+            border-collapse: collapse;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+        }
+
+        .trace th,
+        .trace td {
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+        }
+
+        .trace th { color: var(--ink); font-size: 0.64rem; font-weight: 500; }
+        .trace td { color: var(--muted); }
 
         .article-content a { color: var(--ink); text-underline-offset: 0.18em; }
 
@@ -142,8 +161,68 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="valid-parentheses">
+                <h2>Valid Parentheses</h2>
+                <div class="entry-meta">
+                    <span class="chip">15 Oct 2026</span>
+                    <a class="chip easy" href="https://leetcode.com/problems/valid-parentheses/" target="_blank" rel="noopener noreferrer">#20 · Easy ↗</a>
+                    <span class="chip">pile</span>
+                    <span class="chip">hashmap</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Une chaîne ne contient que les caractères <code>()[]{}</code>. Elle est valide si chaque ouvrante est fermée par une fermante <strong>du même type</strong>, et <strong>dans le bon ordre</strong> : <code>"{[]}()"</code> est valide, <code>"([)]"</code> ne l'est pas.</p>
+
+                <h3>L'idée clé</h3>
+                <p>La dernière parenthèse ouverte est la première qui doit être fermée : c'est exactement le comportement d'une <strong>pile</strong> (LIFO). On empile chaque ouvrante ; à chaque fermante, le sommet de la pile doit être l'ouvrante correspondante, qu'on dépile alors. Un dictionnaire <code>fermante → ouvrante</code> rend la correspondance immédiate.</p>
+
+                <p class="code-label">solution.py</p>
+                <pre><code class="language-python">class Solution:
+    def isValid(self, s: str) -&gt; bool:
+        queue = []
+        d = {')':'(', '}':'{', ']':'['}
+        for char in s:
+            if char in d:
+                if not queue:
+                    return False
+                if d[char] != queue[-1]:
+                    return False
+                queue.pop()
+            else:
+                queue.append(char)
+        return not queue</code></pre>
+
+                <p>Malgré son nom, <code>queue</code> est bien utilisée comme une pile : <code>append</code> et <code>pop</code> agissent tous deux sur la fin de la liste, en <code>O(1)</code>. Trois cas mènent à <code>False</code> : une fermante alors que la pile est vide (<code>")("</code>), une fermante du mauvais type (<code>"(]"</code>), et des ouvrantes restées sans partenaire à la fin (<code>"(("</code>), d'où le <code>return not queue</code>.</p>
+
+                <p>Déroulé sur <code>"([)]"</code> :</p>
+                <div class="table-wrap">
+                    <table class="trace">
+                        <thead><tr><th>caractère</th><th>action</th><th>pile après</th></tr></thead>
+                        <tbody>
+                            <tr><td>(</td><td>ouvrante → empiler</td><td>[ ( ]</td></tr>
+                            <tr><td>[</td><td>ouvrante → empiler</td><td>[ ( [ ]</td></tr>
+                            <tr><td>)</td><td>attend <code>(</code>, sommet = <code>[</code></td><td>→ False</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(n)</code> : un seul passage, chaque caractère est empilé et dépilé au plus une fois. Espace <code>O(n)</code> dans le pire cas (que des ouvrantes).</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Structure imbriquée, « le dernier ouvert est le premier fermé » : penser pile.</li>
+                    <li>Un dictionnaire indexé par la fermante évite une cascade de <code>if</code>.</li>
+                    <li>Petite optimisation possible : une chaîne de longueur impaire ne peut jamais être valide.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal LeetCode | Abdennour Kerboua</title>
+    <meta name="description" content="Journal des exercices d'algorithmique que j'ai résolus, avec mes solutions commentées.">
+    <link rel="icon" type="image/png" href="../assets/kanagawa-wave.png?v=20260821a">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="../note-minimal.css?v=20260821e">
+    <style>
+        /* Coloration syntaxique alignée sur la palette du site (clair et sombre) */
+        .hljs { color: var(--ink); background: transparent; }
+        .hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--olive); font-weight: 500; }
+        .hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--ink); font-weight: 600; }
+        .hljs-string, .hljs-number { color: #8a6a3f; }
+        .hljs-comment { color: var(--faint); font-style: italic; }
+        .hljs-params, .hljs-variable, .hljs-type { color: var(--muted); }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) .hljs-string,
+            :root:not([data-theme="light"]) .hljs-number { color: #d9b77e; }
+        }
+
+        .journal-index { margin: 0 0 1rem; }
+
+        .entry-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0 0 1.4rem;
+        }
+
+        .chip {
+            padding: 0.15rem 0.5rem;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--chip);
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 0.64rem;
+            text-decoration: none;
+        }
+
+        a.chip:hover { color: var(--ink); }
+        .chip.hard { color: #a14d3a; border-color: #d9b2a6; }
+
+        .article-content a { color: var(--ink); text-underline-offset: 0.18em; }
+
+        .article-content code:not(pre code) {
+            padding: 0.05rem 0.3rem;
+            border-radius: 3px;
+            background: var(--chip);
+            color: var(--ink);
+            font-size: 0.85em;
+        }
+
+        .code-label {
+            margin: 1.6rem 0 -0.9rem;
+            color: var(--faint);
+            font-family: var(--mono);
+            font-size: 0.64rem;
+        }
+
+        .boards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.6rem;
+            margin: 1.6rem 0;
+        }
+
+        .boards figure { margin: 0; }
+
+        .boards figcaption {
+            margin-top: 0.5rem;
+            color: var(--faint);
+            font-family: var(--mono);
+            font-size: 0.62rem;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(var(--n), 2.1rem);
+            border: 1px solid var(--line);
+        }
+
+        .board span {
+            display: grid;
+            place-items: center;
+            aspect-ratio: 1;
+            color: var(--ink);
+            font-family: var(--mono);
+            font-size: 0.72rem;
+        }
+
+        .board span.dark { background: var(--chip); }
+        .board span.queen { font-size: 1.1rem; }
+
+        table.complexity {
+            width: 100%;
+            margin: 1.4rem 0;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        table.complexity th,
+        table.complexity td {
+            padding: 0.55rem 0.6rem;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.complexity th {
+            color: var(--ink);
+            font-family: var(--mono);
+            font-size: 0.66rem;
+            font-weight: 500;
+        }
+
+        .table-wrap { overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+    <nav><a href="../index.html" class="logo">ak.</a><div class="nav-links"><a href="../index.html">home</a><a href="../index.html#notes">notes</a><a href="../index.html#links">links</a></div></nav>
+
+    <article class="blog-post-container">
+        <header class="blog-header">
+            <h1 class="article-title">Journal LeetCode</h1>
+            <div class="author-meta">
+                <div class="meta-text">
+                    <span class="author-name">Abdennour Kerboua</span>
+                    <span class="post-date">Mis à jour le 15 Oct 2026</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="article-content">
+            <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
+
+            <ul class="simple-list journal-index">
+                <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
+            </ul>
+
+            <hr class="separator">
+
+            <!-- ============================================================
+                 Entrée : N-Queens I & II
+                 Pour ajouter une entrée : dupliquer ce <section>, changer l'id,
+                 et ajouter une ligne dans .journal-index ci-dessus.
+                 ============================================================ -->
+            <section id="n-queens">
+                <h2>N-Queens I &amp; II</h2>
+                <div class="entry-meta">
+                    <span class="chip">15 Oct 2026</span>
+                    <a class="chip hard" href="https://leetcode.com/problems/n-queens/" target="_blank" rel="noopener noreferrer">#51 · Hard ↗</a>
+                    <a class="chip hard" href="https://leetcode.com/problems/n-queens-ii/" target="_blank" rel="noopener noreferrer">#52 · Hard ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Placer <code>n</code> reines sur un échiquier <code>n × n</code> sans qu'aucune ne puisse en attaquer une autre : jamais deux reines sur la même ligne, la même colonne ou la même diagonale. La version I demande de renvoyer <strong>toutes</strong> les configurations (sous forme de lignes <code>".Q.."</code>), la version II seulement leur <strong>nombre</strong>.</p>
+
+                <div class="boards" id="nq-solutions"></div>
+
+                <h3>L'idée clé</h3>
+                <p>Comme il y a exactement une reine par ligne, on place les reines <strong>ligne par ligne</strong> : la contrainte de ligne est satisfaite par construction. À chaque ligne, on essaie chaque colonne encore libre, on descend récursivement, et on revient en arrière (backtrack) quand plus rien n'est possible.</p>
+                <p>Reste à savoir rapidement si une case <code>(line, i)</code> est attaquée. Sur une même diagonale <code>\</code>, la quantité <code>line − i</code> est constante ; sur une même anti-diagonale <code>/</code>, c'est <code>line + i</code> qui est constante. Une diagonale entière se résume donc à un seul entier.</p>
+
+                <div class="boards" id="nq-diagonals"></div>
+
+                <h3>Solution 1 : matrice d'occupation</h3>
+                <p>Ma première approche : maintenir une matrice <code>occ</code> qui marque les cases attaquées. Quand je pose une reine, je marque sa colonne et ses deux diagonales <em>vers le bas</em> (les lignes du dessus sont déjà remplies, inutile d'y toucher), puis je passe des <strong>copies</strong> de la grille et de <code>occ</code> à l'appel récursif, ce qui évite d'avoir à « dé-marquer » au retour.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def solveNQueens(self, n: int) -&gt; list[list[str]]:
+        res = []
+        grid = [['.' for _ in range(n)] for _ in range(n)]
+        occ = [[0]*n for _ in range(n)]
+        def backtrack(line, grid, occ):
+            if line == n:
+                grid = [''.join(l) for l in grid]
+                res.append(grid)
+                return
+            for i in range(n):
+                if occ[line][i]:
+                    continue
+                grid_new = [row[:] for row in grid]
+                occ_new = [row[:] for row in occ]
+                grid_new[line][i] = 'Q'
+                for j in range(n):
+                    occ_new[j][i] = 1
+                for j in range(min(n-line,n-i)):
+                    occ_new[line+j][i+j] = 1
+                for j in range(min(n-line,i+1)):
+                    occ_new[line+j][i-j] = 1
+
+                backtrack(line+1, grid_new, occ_new)
+        backtrack(0,grid,occ)
+        return res</code></pre>
+
+                <p>Correcte, mais coûteuse : chaque tentative recopie deux matrices <code>n × n</code>, soit un travail en <code>O(n²)</code> par nœud de l'arbre de recherche, et autant de mémoire par niveau de récursion.</p>
+
+                <h3>Solution 2 : trois ensembles et backtracking en place</h3>
+                <p>En utilisant l'observation sur les diagonales, l'état complet tient dans trois ensembles : les colonnes prises, les valeurs de <code>line + i</code> prises et les valeurs de <code>line − i</code> prises. Tester une case devient trois lookups en <code>O(1)</code>, et au lieu de copier, on <strong>annule</strong> le coup après l'appel récursif.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def solveNQueens(self, n: int) -&gt; list[list[str]]:
+        res = []
+        grid = [['.' for _ in range(n)] for _ in range(n)]
+        diag_left = set()
+        diag_right = set()
+        cols = set()
+        def backtrack(line, grid, diag_left, diag_right, cols):
+            if line == n:
+                grid = [''.join(l) for l in grid]
+                res.append(grid)
+                return
+            for i in range(n):
+                if line + i in diag_left or line - i in diag_right or i in cols:
+                    continue
+                diag_left.add(line + i)
+                diag_right.add(line - i)
+                cols.add(i)
+                grid[line][i] = 'Q'
+                backtrack(line+1, grid, diag_left, diag_right, cols)
+                diag_left.remove(line + i)
+                diag_right.remove(line - i)
+                cols.remove(i)
+                grid[line][i] = '.'
+        backtrack(0,grid, diag_left, diag_right, cols)
+        return res</code></pre>
+
+                <p>Le schéma <em>choisir → explorer → annuler</em> est le patron classique du backtracking. La grille n'est convertie en chaînes (<code>''.join</code>) qu'au moment où une solution complète est trouvée, ce qui revient à en prendre un instantané.</p>
+
+                <h3>N-Queens II : compter au lieu de lister</h3>
+                <p>Même parcours, mais on n'a plus besoin de la grille : on incrémente un compteur à chaque feuille valide. Le <code>nonlocal</code> permet de modifier la variable <code>res</code> de la fonction englobante depuis la fonction imbriquée.</p>
+
+                <p class="code-label">n_queens_ii.py</p>
+                <pre><code class="language-python">class Solution:
+    def totalNQueens(self, n: int) -&gt; int:
+        res = 0
+        diag_left = set()
+        diag_right = set()
+        cols = set()
+        def backtrack(line, diag_left, diag_right, cols):
+            if line == n:
+                nonlocal res
+                res += 1
+                return
+            for i in range(n):
+                if line + i in diag_left or line - i in diag_right or i in cols:
+                    continue
+                diag_left.add(line + i)
+                diag_right.add(line - i)
+                cols.add(i)
+
+                backtrack(line+1, diag_left, diag_right, cols)
+
+                diag_left.remove(line + i)
+                diag_right.remove(line - i)
+                cols.remove(i)
+
+        backtrack(0, diag_left, diag_right, cols)
+        return res</code></pre>
+
+                <h3>Complexité</h3>
+                <div class="table-wrap">
+                    <table class="complexity">
+                        <thead>
+                            <tr><th>Solution</th><th>Temps</th><th>Espace auxiliaire</th><th>Coût par nœud</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1 · matrice d'occupation</td><td><code>O(n! · n²)</code></td><td><code>O(n³)</code> (deux grilles par niveau)</td><td>copie de 2 matrices</td></tr>
+                            <tr><td>2 · ensembles</td><td><code>O(n!)</code></td><td><code>O(n²)</code> (grille) + <code>O(n)</code></td><td><code>O(1)</code></td></tr>
+                            <tr><td>II · comptage</td><td><code>O(n!)</code></td><td><code>O(n)</code></td><td><code>O(1)</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><code>O(n!)</code> est une borne supérieure : la ligne <code>k</code> offre au plus <code>n − k</code> colonnes libres, et l'élagage par les diagonales réduit fortement l'arbre en pratique (pour <code>n = 8</code>, il n'y a que 92 solutions).</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Une diagonale se code par un seul entier : <code>r − c</code> pour <code>\</code>, <code>r + c</code> pour <code>/</code>. L'astuce resservira pour tous les problèmes de grille.</li>
+                    <li>Plutôt que de copier l'état à chaque appel, le modifier en place puis l'annuler au retour.</li>
+                    <li>Quand seul le nombre de solutions compte, supprimer tout ce qui sert à construire la sortie.</li>
+                </ul>
+            </section>
+        </div>
+
+        <div class="blog-footer">
+            <a href="../index.html" class="back-link">&larr; Retour à l'accueil</a>
+        </div>
+    </article>
+
+    <footer>
+        <p>&copy; 2026 Abdennour Kerboua.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>
+        hljs.highlightAll();
+
+        // Petits échiquiers d'illustration : chaque case reçoit un libellé via label(r, c)
+        function board(n, label, caption) {
+            const fig = document.createElement('figure');
+            const grid = document.createElement('div');
+            grid.className = 'board';
+            grid.style.setProperty('--n', n);
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    const cell = document.createElement('span');
+                    const text = label(r, c);
+                    if ((r + c) % 2) cell.classList.add('dark');
+                    if (text === '♛') cell.classList.add('queen');
+                    cell.textContent = text;
+                    grid.appendChild(cell);
+                }
+            }
+            const cap = document.createElement('figcaption');
+            cap.textContent = caption;
+            fig.append(grid, cap);
+            return fig;
+        }
+
+        const solutions = [['.Q..', '...Q', 'Q...', '..Q.'], ['..Q.', 'Q...', '...Q', '.Q..']];
+        solutions.forEach((rows, k) => {
+            document.getElementById('nq-solutions').appendChild(
+                board(4, (r, c) => rows[r][c] === 'Q' ? '♛' : '', `n = 4 · solution ${k + 1}/2`)
+            );
+        });
+
+        const diagonals = document.getElementById('nq-diagonals');
+        diagonals.appendChild(board(4, (r, c) => String(r - c), 'line − i  (diagonale \\)'));
+        diagonals.appendChild(board(4, (r, c) => String(r + c), 'line + i  (anti-diagonale /)'));
+    </script>
+</body>
+</html>

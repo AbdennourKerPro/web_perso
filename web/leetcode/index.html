@@ -155,7 +155,7 @@
             <div class="author-meta">
                 <div class="meta-text">
                     <span class="author-name">Abdennour Kerboua</span>
-                    <span class="post-date">Mis à jour le 15 Oct 2026</span>
+                    <span class="post-date">Mis à jour le 16 Oct 2026</span>
                 </div>
             </div>
         </header>
@@ -164,10 +164,100 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>16 Oct 2026</span><a href="#word-search">Word Search <small>backtracking · medium</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#maximal-square">Maximal Square <small>programmation dynamique · medium</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="word-search">
+                <h2>Word Search</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/word-search/" target="_blank" rel="noopener noreferrer">#79 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">dfs</span>
+                    <span class="chip">matrice</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donnée une grille de lettres <code>m × n</code> et un mot, dire si le mot peut être formé en reliant des cases <strong>adjacentes</strong> (haut, bas, gauche, droite), sans réutiliser deux fois la même case.</p>
+
+                <div class="boards" id="ws-example"></div>
+
+                <h3>L'idée clé</h3>
+                <p>On essaie chaque case comme point de départ, puis on prolonge le chemin lettre par lettre par un parcours en <strong>profondeur</strong> (DFS) : à l'étape <code>k</code>, on cherche parmi les 4 voisins une case non utilisée qui porte <code>word[k]</code>. On marque la case avant de descendre et on la libère en remontant : c'est le même patron <em>choisir → explorer → annuler</em> que pour N-Queens.</p>
+
+                <h3>Solution 1 : matrice <code>used</code> et exploration des voisins</h3>
+                <p>Ma version : une matrice <code>used</code> mémorise les cases du chemin courant, et la fonction récursive regarde les voisins de la case courante avant d'y descendre.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def exist(self, board: list[list[str]], word: str) -&gt; bool:
+        m, n = len(board), len(board[0])
+        direction = [(-1,0), (1,0), (0, -1), (0,1)]
+        used = [[0]*n for _ in range(m)]
+        def bfs(i,j, k, used):
+            if k == len(word):
+                return True
+            for d1, d2 in direction:
+                if 0&lt;= i+d1 &lt; m and 0&lt;= j+d2 &lt; n:
+                    if not used[i+d1][j+d2]:
+                        if board[i+d1][j+d2] == word[k]:
+                            used[i+d1][j+d2] = 1
+                            res = bfs(i+d1, j+d2, k+1, used)
+                            used[i+d1][j+d2] = 0
+                            if res:
+                                return True
+            return False
+
+        for i in range(m):
+            for j in range(n):
+                if board[i][j] == word[0]:
+                    used[i][j] = 1
+                    res = bfs(i,j, 1, used)
+                    if res:
+                        return True
+                    used[i][j] = 0
+        return False</code></pre>
+
+                <p><strong>Correction :</strong> ma première version appelait <code>bfs(i, j, [board[i][j]], used)</code>, c'est-à-dire avec une <em>liste</em> comme indice <code>k</code>, ce qui lève un <code>TypeError</code> dès que <code>word[k]</code> est évalué. La première lettre étant déjà vérifiée, la recherche doit reprendre à l'indice <code>k = 1</code>. Autre remarque : malgré son nom, <code>bfs</code> fait un parcours en profondeur (DFS), pas en largeur.</p>
+
+                <h3>Solution 2 (plus usuelle) : marquage en place dans la grille</h3>
+                <p>Variante courante : vérifier la case <em>à l'entrée</em> de l'appel récursif plutôt que ses voisins, et marquer la case visitée directement dans <code>board</code> en remplaçant temporairement sa lettre par <code>'#'</code>. Plus besoin de matrice <code>used</code>, ni de traiter la première lettre à part.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def exist(self, board: list[list[str]], word: str) -&gt; bool:
+        m, n = len(board), len(board[0])
+        def dfs(i, j, k):
+            if k == len(word):
+                return True
+            if not (0 &lt;= i &lt; m and 0 &lt;= j &lt; n) or board[i][j] != word[k]:
+                return False
+            tmp, board[i][j] = board[i][j], '#'
+            found = (dfs(i + 1, j, k + 1) or dfs(i - 1, j, k + 1)
+                     or dfs(i, j + 1, k + 1) or dfs(i, j - 1, k + 1))
+            board[i][j] = tmp
+            return found
+        return any(dfs(i, j, 0) for i in range(m) for j in range(n))</code></pre>
+
+                <p>Les deux versions donnent les mêmes résultats qu'une recherche brute-force sur quelques milliers de grilles aléatoires. La seconde modifie la grille d'entrée pendant la recherche mais la restaure toujours avant de rendre la main.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(m · n · 3<sup>L</sup>)</code> avec <code>L = len(word)</code> : chaque case peut être un départ, puis chaque étape a au plus 3 voisins nouveaux (on ne revient pas sur la case d'où l'on vient). Espace <code>O(L)</code> pour la pile de récursion, plus <code>O(m · n)</code> pour <code>used</code> dans la solution 1.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Chemin dans une grille sans répétition de case : DFS + backtracking, pas BFS (le BFS ne sait pas « dé-visiter » une case propre à un chemin).</li>
+                    <li>Marquer en place (<code>'#'</code>) puis restaurer évite une structure auxiliaire.</li>
+                    <li>Tester la validité à l'entrée de la récursion simplifie le code (bornes, lettre et visite au même endroit).</li>
+                    <li>Élagages utiles en pratique : abandonner si le mot est plus long que <code>m · n</code>, ou si une lettre y apparaît plus souvent que dans la grille.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 
@@ -500,6 +590,12 @@
                 board(4, (r, c) => rows[r][c] === 'Q' ? '♛' : '', `n = 4 · solution ${k + 1}/2`)
             );
         });
+
+        // Word Search : exemple 1 de LeetCode, chemin de "ABCCED" surligné
+        const ws = ['ABCE', 'SFCS', 'ADEE'];
+        const wsPath = ['0,0', '0,1', '0,2', '1,2', '2,2', '2,1'];
+        document.getElementById('ws-example').appendChild(board(3, (r, c) => ws[r][c], 'word = "ABCCED" → true',
+            { cols: 4, shade: (r, c) => wsPath.includes(`${r},${c}`) ? 'hit' : null }));
 
         // Maximal Square : matrice de l'exemple 1 et table dp (convention coin bas-droit)
         const ms = ['10100', '10111', '11111', '10010'];

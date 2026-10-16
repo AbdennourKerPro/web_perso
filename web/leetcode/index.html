@@ -164,6 +164,7 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>16 Oct 2026</span><a href="#subsets">Subsets <small>récursion · backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#unique-paths">Unique Paths <small>programmation dynamique · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#palindrome-partitioning">Palindrome Partitioning <small>backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#word-search">Word Search <small>backtracking · medium</small></a></li>
@@ -171,6 +172,88 @@
                 <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="subsets">
+                <h2>Subsets</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/subsets/" target="_blank" rel="noopener noreferrer">#78 · Medium ↗</a>
+                    <span class="chip">récursion</span>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donné un tableau <code>nums</code> d'entiers <strong>distincts</strong>, renvoyer tous ses sous-ensembles (l'ensemble des parties), dans n'importe quel ordre. Pour <code>[1, 2, 3]</code>, il y en a <code>2³ = 8</code>, de <code>[]</code> à <code>[1, 2, 3]</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>Chaque élément est soit <strong>pris</strong>, soit <strong>laissé</strong> : deux choix indépendants par élément, d'où <code>2<sup>n</sup></code> sous-ensembles. Les trois solutions ci-dessous sont trois façons de parcourir cet arbre de choix binaires.</p>
+
+                <h3>Solution 1 : récursion sur la queue de la liste</h3>
+                <p>Ma version : les sous-ensembles de <code>l</code> sont ceux de <code>l[1:]</code>, plus chacun d'eux complété par <code>l[0]</code>. Elle construit le résultat en remontant, sans état partagé à annuler.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def subsets(self, nums: list[int]) -&gt; list[list[int]]:
+        def aux(l):
+            if len(l) == 0:
+                return [[]]
+            if len(l) == 1:
+                return [[],l]
+            else:
+                res = []
+                rec = aux(l[1:])
+                for sub in rec:
+                    res.append(sub)
+                    res.append([l[0]] + sub)
+                return res
+        res = aux(nums)
+        return res</code></pre>
+
+                <p>J'ai retiré un <code>print</code> de débogage qui affichait chaque appel récursif : sur LeetCode, il ralentit fortement la soumission. Le cas <code>len(l) == 1</code> est redondant, puisque le cas de base <code>[[]]</code> suffit à le produire. Enfin, chaque <code>l[1:]</code> recopie la liste, ce qui reste négligeable devant la taille de la sortie.</p>
+
+                <h3>Solution 2 (plus usuelle en entretien) : backtracking</h3>
+                <p>Le patron que l'on retrouve dans Permutations, Combination Sum ou Palindrome Partitioning : chaque nœud de l'arbre <em>est</em> un sous-ensemble, on l'ajoute au résultat dès qu'on l'atteint, puis on essaie d'ajouter chaque élément suivant (indices croissants pour ne jamais produire deux fois le même ensemble).</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def subsets(self, nums: list[int]) -&gt; list[list[int]]:
+        res, path = [], []
+        def backtrack(start):
+            res.append(path[:])
+            for i in range(start, len(nums)):
+                path.append(nums[i])
+                backtrack(i + 1)
+                path.pop()
+        backtrack(0)
+        return res</code></pre>
+
+                <h3>Solution 3 : construction itérative</h3>
+                <p>Même idée que la solution 1, mais sans récursion : on part de <code>[[]]</code> et, pour chaque élément, on double la liste en ajoutant une copie de chaque sous-ensemble existant complétée par cet élément.</p>
+
+                <p class="code-label">solution_3.py</p>
+                <pre><code class="language-python">class Solution:
+    def subsets(self, nums: list[int]) -&gt; list[list[int]]:
+        res = [[]]
+        for x in nums:
+            res += [sub + [x] for sub in res]
+        return res</code></pre>
+
+                <p>Les trois versions renvoient exactement les <code>2<sup>n</sup></code> sous-ensembles attendus (comparés à <code>itertools.combinations</code> sur quelques centaines de tableaux aléatoires) ; seul l'ordre diffère.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps et espace de sortie <code>O(n · 2<sup>n</sup>)</code> pour les trois : il y a <code>2<sup>n</sup></code> sous-ensembles de taille moyenne <code>n / 2</code>, à construire un par un. Aucune solution ne peut faire mieux, puisque c'est la taille de la réponse. Pile de récursion <code>O(n)</code> pour les solutions 1 et 2.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>« Tous les sous-ensembles » : <code>2<sup>n</sup></code> résultats, une décision binaire par élément.</li>
+                    <li>Le backtracking avec <code>start</code> croissant évite les doublons sans avoir à les filtrer.</li>
+                    <li>Penser à retirer les <code>print</code> de débogage avant de soumettre.</li>
+                    <li>Variante à connaître : Subsets II (<a href="https://leetcode.com/problems/subsets-ii/" target="_blank" rel="noopener noreferrer">#90</a>), avec doublons dans <code>nums</code> : trier, puis sauter <code>nums[i] == nums[i − 1]</code> quand <code>i &gt; start</code>.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 

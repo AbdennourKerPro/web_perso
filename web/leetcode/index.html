@@ -164,6 +164,7 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>16 Oct 2026</span><a href="#permutations">Permutations <small>backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#subsets">Subsets <small>récursion · backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#unique-paths">Unique Paths <small>programmation dynamique · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#palindrome-partitioning">Palindrome Partitioning <small>backtracking · medium</small></a></li>
@@ -172,6 +173,87 @@
                 <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="permutations">
+                <h2>Permutations</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/permutations/" target="_blank" rel="noopener noreferrer">#46 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donné un tableau <code>nums</code> d'entiers <strong>distincts</strong>, renvoyer toutes ses permutations, dans n'importe quel ordre. Pour <code>[1, 2, 3]</code>, il y en a <code>3! = 6</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>On remplit la permutation position par position : à chaque étape, on choisit un élément <strong>pas encore utilisé</strong>. Contrairement à Subsets, l'ordre compte, donc on repart de tous les indices à chaque niveau (et pas seulement de ceux après <code>start</code>) : il faut alors un moyen de savoir quels éléments sont déjà pris.</p>
+
+                <pre><code class="language-plaintext">[]
+├─ [1]
+│   ├─ [1, 2] ─ [1, 2, 3] ✓
+│   └─ [1, 3] ─ [1, 3, 2] ✓
+├─ [2]
+│   ├─ [2, 1] ─ [2, 1, 3] ✓
+│   └─ [2, 3] ─ [2, 3, 1] ✓
+└─ [3]
+    ├─ [3, 1] ─ [3, 1, 2] ✓
+    └─ [3, 2] ─ [3, 2, 1] ✓</code></pre>
+
+                <h3>Solution 1 : tableau <code>used</code> et backtracking</h3>
+                <p>Ma version, qui est aussi la formulation de référence : un tableau <code>used</code> marque les indices déjà placés dans <code>path</code> ; on choisit, on explore, puis on annule les deux.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def permute(self, nums: list[int]) -&gt; list[list[int]]:
+        used = [0]*len(nums)
+        res = []
+        def backtrack(used, path):
+            if len(path) == len(nums):
+                res.append(list(path))
+                return
+            for i in range(len(nums)):
+                if not used[i]:
+                    path.append(nums[i])
+                    used[i] = 1
+                    backtrack(used, path)
+                    path.pop()
+                    used[i] = 0
+        backtrack(used, [])
+        return res</code></pre>
+
+                <h3>Solution 2 : échanges en place</h3>
+                <p>Variante sans <code>used</code> ni <code>path</code> : le préfixe <code>nums[:first]</code> est la partie déjà fixée, et le suffixe <code>nums[first:]</code> contient exactement les éléments encore disponibles. Pour fixer la position <code>first</code>, on y amène chaque élément du suffixe par un échange, on descend, puis on refait l'échange pour restaurer le tableau.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def permute(self, nums: list[int]) -&gt; list[list[int]]:
+        res = []
+        def backtrack(first):
+            if first == len(nums):
+                res.append(nums[:])
+                return
+            for i in range(first, len(nums)):
+                nums[first], nums[i] = nums[i], nums[first]
+                backtrack(first + 1)
+                nums[first], nums[i] = nums[i], nums[first]
+        backtrack(0)
+        return res</code></pre>
+
+                <p>Elle évite la boucle sur des indices déjà utilisés (à la profondeur <code>k</code>, la solution 1 parcourt encore les <code>n</code> indices, dont <code>k</code> sont pris). Les deux versions renvoient exactement les <code>n!</code> permutations attendues (comparées à <code>itertools.permutations</code> sur quelques centaines de tableaux aléatoires) ; l'ordre de sortie diffère légèrement.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps et espace de sortie <code>O(n · n!)</code> : <code>n!</code> permutations de longueur <code>n</code> à copier, ce qui est optimal. Espace auxiliaire <code>O(n)</code> (pile de récursion, plus <code>used</code> et <code>path</code> pour la solution 1).</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Subsets : on choisit <em>si</em> on prend chaque élément (<code>start</code> croissant). Permutations : on choisit <em>quel</em> élément vient ensuite (tous les indices libres).</li>
+                    <li>Marquer les éléments utilisés avec un tableau <code>used</code>, ou les tenir dans un suffixe par échanges.</li>
+                    <li>Variante à connaître : Permutations II (<a href="https://leetcode.com/problems/permutations-ii/" target="_blank" rel="noopener noreferrer">#47</a>), avec doublons : trier, puis sauter <code>nums[i]</code> si <code>nums[i] == nums[i − 1]</code> et que <code>nums[i − 1]</code> n'est pas utilisé.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 

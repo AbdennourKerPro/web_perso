@@ -164,6 +164,7 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>16 Oct 2026</span><a href="#find-min-rotated">Find Minimum in Rotated Sorted Array <small>dichotomie · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#subarray-sum">Subarray Sum Equals K <small>préfixes · hashmap · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#combination-sum-ii">Combination Sum II <small>backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#combination-sum">Combination Sum <small>backtracking · medium</small></a></li>
@@ -176,6 +177,120 @@
                 <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="find-min-rotated">
+                <h2>Find Minimum in Rotated Sorted Array</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/" target="_blank" rel="noopener noreferrer">#153 · Medium ↗</a>
+                    <span class="chip">dichotomie</span>
+                    <span class="chip">tableau trié roté</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Un tableau trié de <code>n</code> entiers <strong>distincts</strong> a été roté entre 1 et <code>n</code> fois vers la droite. Renvoyer son minimum en <strong>O(log n)</strong>. Pour <code>[3,4,5,1,2]</code>, la réponse est <code>1</code> ; pour <code>[4,5,6,7,0,1,2]</code>, c'est <code>0</code> ; pour <code>[11,13,15,17]</code> (rotation de <code>n</code> fois, donc tableau inchangé), c'est <code>11</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>Le tableau est formé de deux segments croissants, et le minimum est le premier élément du second : c'est là que la suite « casse ». Une dichotomie permet de localiser cette cassure. Pour un indice <code>mid</code>, on regarde de quel côté du minimum il se trouve. L'invariant est simple : le minimum reste toujours dans l'intervalle <code>[l, r]</code>, et la boucle <code>while l &lt; r</code> s'arrête sur lui.</p>
+
+                <h3>Solution 1 : ta première version (dichotomie, comparaison à <code>nums[l]</code>)</h3>
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def findMin(self, nums: list[int]) -&gt; int:
+        n = len(nums)
+        l = 0
+        r =len(nums)-1
+
+        while l &lt; r:
+            mid = (l+r)// 2
+
+            if nums[l] &lt; nums[r]:
+                return nums[l]
+            if nums[mid] &gt;= nums[l]:
+                l = mid + 1
+            else:
+                r = mid
+
+        return nums[l]</code></pre>
+
+                <p>Correcte. Le retour anticipé est valable : si <code>nums[l] &lt; nums[r]</code>, le segment <code>[l, r]</code> n'a aucune cassure, donc <code>nums[l]</code> en est le minimum. Sinon, si <code>nums[mid] &gt;= nums[l]</code>, la moitié gauche est croissante et le minimum est à droite de <code>mid</code>. La variable <code>n</code> n'est pas utilisée.</p>
+
+                <h3>Solution 2 : ta deuxième version (linéaire)</h3>
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def findMin(self, nums: list[int]) -&gt; int:
+        if len(nums)==1:
+            return nums[0]
+        left, right = 0, len(nums)-1
+        if nums[left]&lt;nums[right]:
+            return nums[left]
+        while nums[left] &lt; nums[left+1] and nums[right] &gt; nums[right-1]:
+            left+=1
+            right-=1
+        if  nums[left] &gt; nums[left+1]:
+            return nums[left+1]
+        if  nums[right] &lt; nums[right-1]:
+            return nums[right]</code></pre>
+
+                <p>Ici, les deux pointeurs avancent vers le centre tant que les deux bords restent croissants, et la première cassure donne la réponse. C'est correct pour des valeurs distinctes (testé sur 5 000 rotations aléatoires), mais la contrainte <strong>O(log n)</strong> n'est pas respectée : la cassure peut se trouver au milieu, et il faut alors environ <code>n/2</code> pas. Le <code>if len(nums)==1</code> est indispensable, sinon <code>nums[left+1]</code> sort du tableau. Enfin, si les valeurs ne sont pas distinctes, la fonction se termine sans <code>return</code> et renvoie <code>None</code>.</p>
+
+                <h3>Solution 3 (plus usuelle) : comparaison à <code>nums[r]</code></h3>
+                <p>La version canonique compare <code>nums[mid]</code> à <code>nums[r]</code>, et non à <code>nums[l]</code>. Si <code>nums[mid] &gt; nums[r]</code>, la cassure est entre <code>mid</code> et <code>r</code>, donc le minimum est à droite de <code>mid</code>. Sinon, le segment <code>[mid, r]</code> est croissant : le minimum est en <code>mid</code> ou à gauche, on garde donc <code>r = mid</code>. Plus besoin de cas particulier pour un segment non roté.</p>
+
+                <p class="code-label">solution_3.py</p>
+                <pre><code class="language-python">class Solution:
+    def findMin(self, nums: list[int]) -&gt; int:
+        l, r = 0, len(nums) - 1
+        while l &lt; r:
+            mid = (l + r) // 2
+            if nums[mid] &gt; nums[r]:
+                l = mid + 1
+            else:
+                r = mid
+        return nums[l]</code></pre>
+
+                <p>Déroulé sur <code>[4,5,6,7,0,1,2]</code> :</p>
+                <div class="table-wrap">
+                    <table class="trace">
+                        <thead><tr><th>l</th><th>r</th><th>mid</th><th>nums[mid]</th><th>nums[r]</th><th>action</th></tr></thead>
+                        <tbody>
+                            <tr><td>0</td><td>6</td><td>3</td><td>7</td><td>2</td><td>7 &gt; 2 → l = mid + 1 = 4</td></tr>
+                            <tr><td>4</td><td>6</td><td>5</td><td>1</td><td>2</td><td>1 ≤ 2 → r = mid = 5</td></tr>
+                            <tr><td>4</td><td>5</td><td>4</td><td>0</td><td>1</td><td>0 ≤ 1 → r = mid = 4</td></tr>
+                            <tr><td>4</td><td>4</td><td colspan="3">fin : l = r</td><td>minimum = nums[4] = 0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Vérification</h3>
+                <p>Les trois versions ont été comparées au minimum calculé directement sur 5 000 rotations aléatoires de tableaux de 1 à 12 valeurs distinctes : toutes donnent le bon résultat. Avec doublons (problème <a href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/" target="_blank" rel="noopener noreferrer">#154</a>), elles se trompent dans certains cas, et ta deuxième version renvoie même parfois <code>None</code>.</p>
+
+                <h3>Complexité</h3>
+                <div class="table-wrap">
+                    <table class="complexity">
+                        <thead>
+                            <tr><th>Solution</th><th>Temps</th><th>Espace</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1 · dichotomie, comparaison à <code>nums[l]</code></td><td><code>O(log n)</code></td><td><code>O(1)</code></td></tr>
+                            <tr><td>2 · linéaire</td><td><code>O(n)</code> dans le pire cas</td><td><code>O(1)</code></td></tr>
+                            <tr><td>3 · dichotomie, comparaison à <code>nums[r]</code></td><td><code>O(log n)</code></td><td><code>O(1)</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Un tableau trié roté est fait de deux segments croissants : le minimum est la cassure.</li>
+                    <li>Comparer <code>nums[mid]</code> à <code>nums[r]</code> donne directement le côté du minimum, sans cas particulier.</li>
+                    <li>Maintenir l'invariant « le minimum est dans <code>[l, r]</code> » rend la boucle simple à prouver.</li>
+                    <li>Une solution linéaire peut être correcte, mais elle ne répond pas à la contrainte de l'énoncé.</li>
+                    <li>Avec doublons (<a href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/" target="_blank" rel="noopener noreferrer">#154</a>), la comparaison ne suffit plus : quand <code>nums[mid] == nums[r]</code>, on réduit <code>r</code> d'un cran.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 

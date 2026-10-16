@@ -164,6 +164,7 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>16 Oct 2026</span><a href="#subarray-sum">Subarray Sum Equals K <small>préfixes · hashmap · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#combination-sum-ii">Combination Sum II <small>backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#combination-sum">Combination Sum <small>backtracking · medium</small></a></li>
                 <li><span>16 Oct 2026</span><a href="#permutations">Permutations <small>backtracking · medium</small></a></li>
@@ -175,6 +176,84 @@
                 <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="subarray-sum">
+                <h2>Subarray Sum Equals K</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/subarray-sum-equals-k/" target="_blank" rel="noopener noreferrer">#560 · Medium ↗</a>
+                    <span class="chip">somme préfixe</span>
+                    <span class="chip">hashmap</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donné un tableau <code>nums</code> d'entiers (éventuellement négatifs) et un entier <code>k</code>, compter le nombre de sous-tableaux <strong>contigus et non vides</strong> dont la somme vaut <code>k</code>. Pour <code>[1,1,1]</code> et <code>k = 2</code> : <code>2</code> (les deux paires adjacentes).</p>
+
+                <h3>L'idée clé</h3>
+                <p>Notons <code>S[i]</code> la somme des <code>i</code> premiers éléments (<code>S[0] = 0</code>). La somme du sous-tableau <code>nums[i..j]</code> vaut <code>S[j+1] − S[i]</code>. Il s'agit donc de compter les paires de préfixes <code>(S[i], S[j+1])</code> telles que <code>S[j+1] − S[i] = k</code>. Pour chaque nouveau préfixe, il suffit de savoir combien de préfixes précédents valent <code>S − k</code>, ce qu'une table de hachage donne en <code>O(1)</code>.</p>
+
+                <div class="table-wrap">
+                    <table class="trace">
+                        <thead><tr><th>i</th><th>cum (S)</th><th>S − k</th><th>trouvé dans freq</th><th>res</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>1</td><td>−1</td><td>0</td><td>0</td></tr>
+                            <tr><td>2</td><td>2</td><td>0</td><td>1</td><td>1</td></tr>
+                            <tr><td>3</td><td>3</td><td>1</td><td>1</td><td>2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Déroulé sur <code>[1,1,1]</code>, <code>k = 2</code> avec la solution 1 : à <code>i = 2</code>, <code>S − k = 0</code> est présent une fois (le préfixe vide), ce qui compte le sous-tableau <code>[1,1]</code>.</p>
+
+                <h3>Solution 1 : mon code</h3>
+                <p>Ma version, qui suit exactement l'idée ci-dessus. Les <code>print</code> de débogage ont été retirés : ils affichaient à chaque exécution le tableau des préfixes et la table, ce qui pèse sur les grands tests.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def subarraySum(self, nums: List[int], k: int) -&gt; int:
+        freq = {0:1}
+        n=len(nums)
+        res = 0
+        cum = [0]*(n+1)
+        for i in range(1,n+1):
+            cum[i] = cum[i-1] + nums[i-1]
+            if cum[i] - k in freq:
+                res+=freq[cum[i] - k]
+            freq[cum[i]] = freq.get(cum[i], 0) + 1
+        return res</code></pre>
+
+                <p><strong>Point important :</strong> le test <code>cum[i] - k in freq</code> se fait <em>avant</em> d'ajouter <code>cum[i]</code> à la table. Sinon, avec <code>k = 0</code>, chaque élément se compterait lui-même comme un sous-tableau vide. La table est initialisée à <code>{0: 1}</code> pour compter les sous-tableaux qui commencent au tout début du tableau.</p>
+
+                <h3>Solution 2 : somme courante, sans tableau</h3>
+                <p>Le tableau <code>cum</code> n'est jamais réutilisé après l'itération : une variable <code>total</code> suffit, et la boucle peut parcourir <code>nums</code> directement. C'est la forme la plus courante en entretien.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def subarraySum(self, nums: List[int], k: int) -&gt; int:
+        freq = {0: 1}
+        total = res = 0
+        for x in nums:
+            total += x
+            res += freq.get(total - k, 0)
+            freq[total] = freq.get(total, 0) + 1
+        return res</code></pre>
+
+                <p>Les deux versions renvoient le même résultat que l'énumération brute-force de tous les sous-tableaux, sur 3 000 tableaux aléatoires contenant des valeurs négatives et nulles. Les exemples de LeetCode donnent <code>2</code> pour <code>[1,1,1]</code> et <code>k = 2</code>, et <code>2</code> pour <code>[1,2,3]</code> et <code>k = 3</code>.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(n)</code> : un seul passage, avec des insertions et recherches moyennes en <code>O(1)</code> dans le dictionnaire. Espace <code>O(n)</code> dans le pire cas (tous les préfixes distincts). La solution 2 garde le même temps mais évite le tableau <code>cum</code> : l'espace est alors dominé par la table de hachage. La version naïve, qui teste chaque sous-tableau, est en <code>O(n²)</code>.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Somme de sous-tableau = différence de deux préfixes : compter des paires plutôt que parcourir des sous-tableaux.</li>
+                    <li>Interroger la table <em>avant</em> d'y insérer le préfixe courant (cas <code>k = 0</code>).</li>
+                    <li>Initialiser avec <code>{0: 1}</code> pour le préfixe vide.</li>
+                    <li>Pourquoi pas une fenêtre glissante ? Elle suppose que la somme croît quand on élargit la fenêtre, ce qui n'est plus vrai avec des négatifs. La table de hachage ne fait pas cette hypothèse.</li>
+                    <li>Variante à connaître : Subarray Sums Divisible by K (<a href="https://leetcode.com/problems/subarray-sums-divisible-by-k/" target="_blank" rel="noopener noreferrer">#974</a>), où l'on compte les préfixes ayant le même reste modulo <code>k</code>.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 

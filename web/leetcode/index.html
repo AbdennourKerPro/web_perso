@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Journal LeetCode | Abdennour Kerboua</title>
     <meta name="description" content="Journal des exercices d'algorithmique que j'ai résolus, avec mes solutions commentées.">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <link rel="icon" type="image/png" href="../assets/kanagawa-wave.png?v=20260821a">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,6 +47,26 @@
 
         a.chip:hover { color: var(--ink); }
         .chip.hard { color: #a14d3a; border-color: #d9b2a6; }
+        .chip.easy { color: #5d7a4a; border-color: #b9c8ac; }
+        .chip.medium { color: #9a7322; border-color: #d8c497; }
+
+        .trace {
+            width: 100%;
+            margin: 1.4rem 0;
+            border-collapse: collapse;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+        }
+
+        .trace th,
+        .trace td {
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+        }
+
+        .trace th { color: var(--ink); font-size: 0.64rem; font-weight: 500; }
+        .trace td { color: var(--muted); }
 
         .article-content a { color: var(--ink); text-underline-offset: 0.18em; }
 
@@ -97,6 +118,8 @@
 
         .board span.dark { background: var(--chip); }
         .board span.queen { font-size: 1.1rem; }
+        .board span.zero { color: var(--faint); }
+        .board span.hit { background: var(--selection); font-weight: 600; }
 
         table.complexity {
             width: 100%;
@@ -133,7 +156,7 @@
             <div class="author-meta">
                 <div class="meta-text">
                     <span class="author-name">Abdennour Kerboua</span>
-                    <span class="post-date">Mis à jour le 15 Oct 2026</span>
+                    <span class="post-date">Mis à jour le 16 Oct 2026</span>
                 </div>
             </div>
         </header>
@@ -142,8 +165,910 @@
             <p>Un carnet de bord des exercices d'algorithmique que je résous en préparant des entretiens techniques. Pour chaque problème : l'idée clé, mes solutions successives (y compris les premières, moins efficaces) et ce que j'en retiens.</p>
 
             <ul class="simple-list journal-index">
+                <li><span>16 Oct 2026</span><a href="#find-min-rotated">Find Minimum in Rotated Sorted Array <small>dichotomie · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#subarray-sum">Subarray Sum Equals K <small>préfixes · hashmap · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#combination-sum-ii">Combination Sum II <small>backtracking · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#combination-sum">Combination Sum <small>backtracking · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#permutations">Permutations <small>backtracking · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#subsets">Subsets <small>récursion · backtracking · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#unique-paths">Unique Paths <small>programmation dynamique · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#palindrome-partitioning">Palindrome Partitioning <small>backtracking · medium</small></a></li>
+                <li><span>16 Oct 2026</span><a href="#word-search">Word Search <small>backtracking · medium</small></a></li>
+                <li><span>15 Oct 2026</span><a href="#maximal-square">Maximal Square <small>programmation dynamique · medium</small></a></li>
+                <li><span>15 Oct 2026</span><a href="#valid-parentheses">Valid Parentheses <small>pile · easy</small></a></li>
                 <li><span>15 Oct 2026</span><a href="#n-queens">N-Queens I &amp; II <small>backtracking · hard</small></a></li>
             </ul>
+
+            <hr class="separator">
+
+            <section id="find-min-rotated">
+                <h2>Find Minimum in Rotated Sorted Array</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/" target="_blank" rel="noopener noreferrer">#153 · Medium ↗</a>
+                    <span class="chip">dichotomie</span>
+                    <span class="chip">tableau trié roté</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Un tableau trié de <code>n</code> entiers <strong>distincts</strong> a été roté entre 1 et <code>n</code> fois vers la droite. Renvoyer son minimum en <strong>O(log n)</strong>. Pour <code>[3,4,5,1,2]</code>, la réponse est <code>1</code> ; pour <code>[4,5,6,7,0,1,2]</code>, c'est <code>0</code> ; pour <code>[11,13,15,17]</code> (rotation de <code>n</code> fois, donc tableau inchangé), c'est <code>11</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>Le tableau est formé de deux segments croissants, et le minimum est le premier élément du second : c'est là que la suite « casse ». Une dichotomie permet de localiser cette cassure. Pour un indice <code>mid</code>, on regarde de quel côté du minimum il se trouve. L'invariant est simple : le minimum reste toujours dans l'intervalle <code>[l, r]</code>, et la boucle <code>while l &lt; r</code> s'arrête sur lui.</p>
+
+                <h3>Solution 1 : ta première version (dichotomie, comparaison à <code>nums[l]</code>)</h3>
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def findMin(self, nums: list[int]) -&gt; int:
+        n = len(nums)
+        l = 0
+        r =len(nums)-1
+
+        while l &lt; r:
+            mid = (l+r)// 2
+
+            if nums[l] &lt; nums[r]:
+                return nums[l]
+            if nums[mid] &gt;= nums[l]:
+                l = mid + 1
+            else:
+                r = mid
+
+        return nums[l]</code></pre>
+
+                <p>Correcte. Le retour anticipé est valable : si <code>nums[l] &lt; nums[r]</code>, le segment <code>[l, r]</code> n'a aucune cassure, donc <code>nums[l]</code> en est le minimum. Sinon, si <code>nums[mid] &gt;= nums[l]</code>, la moitié gauche est croissante et le minimum est à droite de <code>mid</code>. La variable <code>n</code> n'est pas utilisée.</p>
+
+                <h3>Solution 2 : ta deuxième version (linéaire)</h3>
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def findMin(self, nums: list[int]) -&gt; int:
+        if len(nums)==1:
+            return nums[0]
+        left, right = 0, len(nums)-1
+        if nums[left]&lt;nums[right]:
+            return nums[left]
+        while nums[left] &lt; nums[left+1] and nums[right] &gt; nums[right-1]:
+            left+=1
+            right-=1
+        if  nums[left] &gt; nums[left+1]:
+            return nums[left+1]
+        if  nums[right] &lt; nums[right-1]:
+            return nums[right]</code></pre>
+
+                <p>Ici, les deux pointeurs avancent vers le centre tant que les deux bords restent croissants, et la première cassure donne la réponse. C'est correct pour des valeurs distinctes (testé sur 5 000 rotations aléatoires), mais la contrainte <strong>O(log n)</strong> n'est pas respectée : la cassure peut se trouver au milieu, et il faut alors environ <code>n/2</code> pas. Le <code>if len(nums)==1</code> est indispensable, sinon <code>nums[left+1]</code> sort du tableau. Enfin, si les valeurs ne sont pas distinctes, la fonction se termine sans <code>return</code> et renvoie <code>None</code>.</p>
+
+                <h3>Solution 3 (plus usuelle) : comparaison à <code>nums[r]</code></h3>
+                <p>La version canonique compare <code>nums[mid]</code> à <code>nums[r]</code>, et non à <code>nums[l]</code>. Si <code>nums[mid] &gt; nums[r]</code>, la cassure est entre <code>mid</code> et <code>r</code>, donc le minimum est à droite de <code>mid</code>. Sinon, le segment <code>[mid, r]</code> est croissant : le minimum est en <code>mid</code> ou à gauche, on garde donc <code>r = mid</code>. Plus besoin de cas particulier pour un segment non roté.</p>
+
+                <p class="code-label">solution_3.py</p>
+                <pre><code class="language-python">class Solution:
+    def findMin(self, nums: list[int]) -&gt; int:
+        l, r = 0, len(nums) - 1
+        while l &lt; r:
+            mid = (l + r) // 2
+            if nums[mid] &gt; nums[r]:
+                l = mid + 1
+            else:
+                r = mid
+        return nums[l]</code></pre>
+
+                <p>Déroulé sur <code>[4,5,6,7,0,1,2]</code> :</p>
+                <div class="table-wrap">
+                    <table class="trace">
+                        <thead><tr><th>l</th><th>r</th><th>mid</th><th>nums[mid]</th><th>nums[r]</th><th>action</th></tr></thead>
+                        <tbody>
+                            <tr><td>0</td><td>6</td><td>3</td><td>7</td><td>2</td><td>7 &gt; 2 → l = mid + 1 = 4</td></tr>
+                            <tr><td>4</td><td>6</td><td>5</td><td>1</td><td>2</td><td>1 ≤ 2 → r = mid = 5</td></tr>
+                            <tr><td>4</td><td>5</td><td>4</td><td>0</td><td>1</td><td>0 ≤ 1 → r = mid = 4</td></tr>
+                            <tr><td>4</td><td>4</td><td colspan="3">fin : l = r</td><td>minimum = nums[4] = 0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Vérification</h3>
+                <p>Les trois versions ont été comparées au minimum calculé directement sur 5 000 rotations aléatoires de tableaux de 1 à 12 valeurs distinctes : toutes donnent le bon résultat. Avec doublons (problème <a href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/" target="_blank" rel="noopener noreferrer">#154</a>), elles se trompent dans certains cas, et ta deuxième version renvoie même parfois <code>None</code>.</p>
+
+                <h3>Complexité</h3>
+                <div class="table-wrap">
+                    <table class="complexity">
+                        <thead>
+                            <tr><th>Solution</th><th>Temps</th><th>Espace</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1 · dichotomie, comparaison à <code>nums[l]</code></td><td><code>O(log n)</code></td><td><code>O(1)</code></td></tr>
+                            <tr><td>2 · linéaire</td><td><code>O(n)</code> dans le pire cas</td><td><code>O(1)</code></td></tr>
+                            <tr><td>3 · dichotomie, comparaison à <code>nums[r]</code></td><td><code>O(log n)</code></td><td><code>O(1)</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Un tableau trié roté est fait de deux segments croissants : le minimum est la cassure.</li>
+                    <li>Comparer <code>nums[mid]</code> à <code>nums[r]</code> donne directement le côté du minimum, sans cas particulier.</li>
+                    <li>Maintenir l'invariant « le minimum est dans <code>[l, r]</code> » rend la boucle simple à prouver.</li>
+                    <li>Une solution linéaire peut être correcte, mais elle ne répond pas à la contrainte de l'énoncé.</li>
+                    <li>Avec doublons (<a href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/" target="_blank" rel="noopener noreferrer">#154</a>), la comparaison ne suffit plus : quand <code>nums[mid] == nums[r]</code>, on réduit <code>r</code> d'un cran.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="subarray-sum">
+                <h2>Subarray Sum Equals K</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/subarray-sum-equals-k/" target="_blank" rel="noopener noreferrer">#560 · Medium ↗</a>
+                    <span class="chip">somme préfixe</span>
+                    <span class="chip">hashmap</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donné un tableau <code>nums</code> d'entiers (éventuellement négatifs) et un entier <code>k</code>, compter le nombre de sous-tableaux <strong>contigus et non vides</strong> dont la somme vaut <code>k</code>. Pour <code>[1,1,1]</code> et <code>k = 2</code> : <code>2</code> (les deux paires adjacentes).</p>
+
+                <h3>L'idée clé</h3>
+                <p>Notons <code>S[i]</code> la somme des <code>i</code> premiers éléments (<code>S[0] = 0</code>). La somme du sous-tableau <code>nums[i..j]</code> vaut <code>S[j+1] − S[i]</code>. Il s'agit donc de compter les paires de préfixes <code>(S[i], S[j+1])</code> telles que <code>S[j+1] − S[i] = k</code>. Pour chaque nouveau préfixe, il suffit de savoir combien de préfixes précédents valent <code>S − k</code>, ce qu'une table de hachage donne en <code>O(1)</code>.</p>
+
+                <div class="table-wrap">
+                    <table class="trace">
+                        <thead><tr><th>i</th><th>cum (S)</th><th>S − k</th><th>trouvé dans freq</th><th>res</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>1</td><td>−1</td><td>0</td><td>0</td></tr>
+                            <tr><td>2</td><td>2</td><td>0</td><td>1</td><td>1</td></tr>
+                            <tr><td>3</td><td>3</td><td>1</td><td>1</td><td>2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Déroulé sur <code>[1,1,1]</code>, <code>k = 2</code> avec la solution 1 : à <code>i = 2</code>, <code>S − k = 0</code> est présent une fois (le préfixe vide), ce qui compte le sous-tableau <code>[1,1]</code>.</p>
+
+                <h3>Solution 1 : mon code</h3>
+                <p>Ma version, qui suit exactement l'idée ci-dessus. Les <code>print</code> de débogage ont été retirés : ils affichaient à chaque exécution le tableau des préfixes et la table, ce qui pèse sur les grands tests.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def subarraySum(self, nums: List[int], k: int) -&gt; int:
+        freq = {0:1}
+        n=len(nums)
+        res = 0
+        cum = [0]*(n+1)
+        for i in range(1,n+1):
+            cum[i] = cum[i-1] + nums[i-1]
+            if cum[i] - k in freq:
+                res+=freq[cum[i] - k]
+            freq[cum[i]] = freq.get(cum[i], 0) + 1
+        return res</code></pre>
+
+                <p><strong>Point important :</strong> le test <code>cum[i] - k in freq</code> se fait <em>avant</em> d'ajouter <code>cum[i]</code> à la table. Sinon, avec <code>k = 0</code>, chaque élément se compterait lui-même comme un sous-tableau vide. La table est initialisée à <code>{0: 1}</code> pour compter les sous-tableaux qui commencent au tout début du tableau.</p>
+
+                <h3>Solution 2 : somme courante, sans tableau</h3>
+                <p>Le tableau <code>cum</code> n'est jamais réutilisé après l'itération : une variable <code>total</code> suffit, et la boucle peut parcourir <code>nums</code> directement. C'est la forme la plus courante en entretien.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def subarraySum(self, nums: List[int], k: int) -&gt; int:
+        freq = {0: 1}
+        total = res = 0
+        for x in nums:
+            total += x
+            res += freq.get(total - k, 0)
+            freq[total] = freq.get(total, 0) + 1
+        return res</code></pre>
+
+                <p>Les deux versions renvoient le même résultat que l'énumération brute-force de tous les sous-tableaux, sur 3 000 tableaux aléatoires contenant des valeurs négatives et nulles. Les exemples de LeetCode donnent <code>2</code> pour <code>[1,1,1]</code> et <code>k = 2</code>, et <code>2</code> pour <code>[1,2,3]</code> et <code>k = 3</code>.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(n)</code> : un seul passage, avec des insertions et recherches moyennes en <code>O(1)</code> dans le dictionnaire. Espace <code>O(n)</code> dans le pire cas (tous les préfixes distincts). La solution 2 garde le même temps mais évite le tableau <code>cum</code> : l'espace est alors dominé par la table de hachage. La version naïve, qui teste chaque sous-tableau, est en <code>O(n²)</code>.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Somme de sous-tableau = différence de deux préfixes : compter des paires plutôt que parcourir des sous-tableaux.</li>
+                    <li>Interroger la table <em>avant</em> d'y insérer le préfixe courant (cas <code>k = 0</code>).</li>
+                    <li>Initialiser avec <code>{0: 1}</code> pour le préfixe vide.</li>
+                    <li>Pourquoi pas une fenêtre glissante ? Elle suppose que la somme croît quand on élargit la fenêtre, ce qui n'est plus vrai avec des négatifs. La table de hachage ne fait pas cette hypothèse.</li>
+                    <li>Variante à connaître : Subarray Sums Divisible by K (<a href="https://leetcode.com/problems/subarray-sums-divisible-by-k/" target="_blank" rel="noopener noreferrer">#974</a>), où l'on compte les préfixes ayant le même reste modulo <code>k</code>.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="combination-sum-ii">
+                <h2>Combination Sum II</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/combination-sum-ii/" target="_blank" rel="noopener noreferrer">#40 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">doublons</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donnés des <code>candidates</code> pouvant contenir des <strong>doublons</strong> et une cible, renvoyer toutes les combinaisons <strong>uniques</strong> dont la somme vaut la cible. Chaque candidat ne peut être utilisé <strong>qu'une seule fois</strong>. Pour <code>[10,1,2,7,6,1,5]</code> et une cible de 8 : <code>[[1,1,6],[1,2,5],[1,7],[2,6]]</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>Deux difficultés à combiner :</p>
+                <ul>
+                    <li><strong>Chaque élément une seule fois</strong> : la récursion repart de <code>i + 1</code>, et non de <code>i</code> comme dans Combination Sum.</li>
+                    <li><strong>Éviter les doublons de résultat</strong> : si deux valeurs égales sont proposées au même niveau de la récursion, choisir l'une ou l'autre donne le même ensemble. On trie donc <code>candidates</code>, et on ignore une valeur identique à la précédente <em>parmi les frères</em>.</li>
+                </ul>
+
+                <h3>Solution</h3>
+                <p>Mon code est déjà la version usuelle de ce problème.</p>
+
+                <p class="code-label">solution.py</p>
+                <pre><code class="language-python">class Solution:
+    def combinationSum2(self, candidates: list[int], target: int) -&gt; list[list[int]]:
+        res = []
+        candidates.sort()
+
+        def backtrack(start, target, path):
+            if target == 0:
+                res.append(list(path))
+                return
+            if target &lt; 0:
+                return
+
+            for i in range(start, len(candidates)):
+                if start &lt; i and candidates[i] == candidates[i-1]:
+                    continue
+
+                path.append(candidates[i])
+                backtrack(i+1, target - candidates[i], path)
+                path.pop()
+
+        backtrack(0, target, [])
+        return res</code></pre>
+
+                <p>La condition <code>start &lt; i</code> est le point délicat. Elle ne saute que les valeurs identiques <em>au même niveau</em> de l'arbre (les « frères »), pas celles qui sont déjà dans le chemin. Avec <code>i &gt; 0</code> à la place, <code>[1,1,2]</code> et une cible de 2 donnent <code>[[2]]</code> au lieu de <code>[[1,1],[2]]</code> : le second <code>1</code> est sauté alors qu'il est nécessaire. J'ai vérifié ce cas et les deux exemples de LeetCode, ainsi qu'une comparaison à une énumération brute-force sur quelques centaines de tableaux aléatoires avec doublons.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(2<sup>N</sup> · N)</code> dans le pire cas, où <code>N = len(candidates)</code> : chaque élément est pris ou non, et chaque combinaison trouvée est copiée. Le tri ajoute <code>O(N log N)</code>. Espace auxiliaire <code>O(N)</code> pour la pile de récursion.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Doublons + « chaque élément une fois » : trier, puis sauter les frères identiques (<code>start &lt; i</code>).</li>
+                    <li>Le piège classique est de comparer à <code>i &gt; 0</code>, qui supprime aussi des combinaisons valides.</li>
+                    <li>Même idée que Subsets II (<a href="https://leetcode.com/problems/subsets-ii/" target="_blank" rel="noopener noreferrer">#90</a>).</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="combination-sum">
+                <h2>Combination Sum</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/combination-sum/" target="_blank" rel="noopener noreferrer">#39 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donnés des <code>candidates</code> distincts et une cible, renvoyer toutes les combinaisons <strong>uniques</strong> dont la somme vaut la cible. Un même candidat peut être utilisé <strong>autant de fois</strong> qu'on veut. Pour <code>[2,3,6,7]</code> et une cible de 7 : <code>[[2,2,3],[7]]</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>C'est le patron de Subsets, avec deux différences. D'abord, comme un élément peut être réutilisé, la récursion repart de <code>i</code> et non de <code>i + 1</code>. Ensuite, on descend seulement tant que la somme ne dépasse pas la cible. Le paramètre <code>start</code> impose des indices croissants : on produit <code>[2,3]</code> mais jamais <code>[3,2]</code>, qui est la même combinaison.</p>
+
+                <h3>Solution 1 : mon code</h3>
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def combinationSum(self, candidates: list[int], target: int) -&gt; list[list[int]]:
+        res = []
+
+        def backtrack(start, target, path):
+            if target == 0:
+                res.append(list(path))
+                return
+
+            if target &lt; 0:
+                return
+
+            for i in range(start, len(candidates)):
+                path.append(candidates[i])
+                backtrack(i, target - candidates[i], path)
+                path.pop()
+        backtrack(0, target, [])
+        return res</code></pre>
+
+                <p>Correct. Le cas <code>target &lt; 0</code> coupe une branche, mais la boucle essaie tous les candidats même lorsqu'ils dépassent déjà le reste : ces appels meurent immédiatement, sans effet sur le résultat. C'est ce que corrige la version suivante.</p>
+
+                <h3>Solution 2 (plus usuelle) : tri et élagage</h3>
+                <p>En triant <code>candidates</code>, dès qu'un candidat dépasse le reste, tous les suivants le dépassent aussi : on peut arrêter la boucle avec <code>break</code>. Le reste fonctionne sans cas négatif, puisque la récursion n'est appelée qu'avec des candidats qui tiennent dans le reste.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def combinationSum(self, candidates: list[int], target: int) -&gt; list[list[int]]:
+        candidates = sorted(candidates)
+        res, path = [], []
+
+        def backtrack(start, remaining):
+            if remaining == 0:
+                res.append(path[:])
+                return
+            for i in range(start, len(candidates)):
+                if candidates[i] &gt; remaining:
+                    break
+                path.append(candidates[i])
+                backtrack(i, remaining - candidates[i])
+                path.pop()
+
+        backtrack(0, target)
+        return res</code></pre>
+
+                <p>Les deux versions renvoient les mêmes combinaisons, comparées à une énumération brute-force sur quelques centaines de cas aléatoires. La seconde explore moins de branches, et son code est plus court.</p>
+
+                <h3>Complexité</h3>
+                <p>Avec <code>N</code> candidats, le plus petit <code>M</code> et la cible <code>T</code> : la profondeur est au plus <code>T / M</code>, chaque niveau a au plus <code>N</code> branches. Temps <code>O(N<sup>T/M</sup> · N)</code> dans le pire cas (copie des combinaisons comprise), espace auxiliaire <code>O(T / M)</code> pour la pile et <code>path</code>.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Réutilisation illimitée : la récursion repart de <code>i</code>, et non de <code>i + 1</code>.</li>
+                    <li>Des indices croissants (<code>start</code>) suppriment les permutations d'une même combinaison.</li>
+                    <li>Trier puis <code>break</code> élague la boucle dès qu'un candidat dépasse le reste.</li>
+                    <li>Variantes à connaître : Combination Sum III (<a href="https://leetcode.com/problems/combination-sum-iii/" target="_blank" rel="noopener noreferrer">#216</a>), avec un nombre fixé d'éléments distincts de 1 à 9, et Combination Sum IV (<a href="https://leetcode.com/problems/combination-sum-iv/" target="_blank" rel="noopener noreferrer">#377</a>), qui compte les séquences ordonnées et se résout par programmation dynamique.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="permutations">
+                <h2>Permutations</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/permutations/" target="_blank" rel="noopener noreferrer">#46 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donné un tableau <code>nums</code> d'entiers <strong>distincts</strong>, renvoyer toutes ses permutations, dans n'importe quel ordre. Pour <code>[1, 2, 3]</code>, il y en a <code>3! = 6</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>On remplit la permutation position par position : à chaque étape, on choisit un élément <strong>pas encore utilisé</strong>. Contrairement à Subsets, l'ordre compte, donc on repart de tous les indices à chaque niveau (et pas seulement de ceux après <code>start</code>) : il faut alors un moyen de savoir quels éléments sont déjà pris.</p>
+
+                <pre><code class="language-plaintext">[]
+├─ [1]
+│   ├─ [1, 2] ─ [1, 2, 3] ✓
+│   └─ [1, 3] ─ [1, 3, 2] ✓
+├─ [2]
+│   ├─ [2, 1] ─ [2, 1, 3] ✓
+│   └─ [2, 3] ─ [2, 3, 1] ✓
+└─ [3]
+    ├─ [3, 1] ─ [3, 1, 2] ✓
+    └─ [3, 2] ─ [3, 2, 1] ✓</code></pre>
+
+                <h3>Solution 1 : tableau <code>used</code> et backtracking</h3>
+                <p>Ma version, qui est aussi la formulation de référence : un tableau <code>used</code> marque les indices déjà placés dans <code>path</code> ; on choisit, on explore, puis on annule les deux.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def permute(self, nums: list[int]) -&gt; list[list[int]]:
+        used = [0]*len(nums)
+        res = []
+        def backtrack(used, path):
+            if len(path) == len(nums):
+                res.append(list(path))
+                return
+            for i in range(len(nums)):
+                if not used[i]:
+                    path.append(nums[i])
+                    used[i] = 1
+                    backtrack(used, path)
+                    path.pop()
+                    used[i] = 0
+        backtrack(used, [])
+        return res</code></pre>
+
+                <h3>Solution 2 : échanges en place</h3>
+                <p>Variante sans <code>used</code> ni <code>path</code> : le préfixe <code>nums[:first]</code> est la partie déjà fixée, et le suffixe <code>nums[first:]</code> contient exactement les éléments encore disponibles. Pour fixer la position <code>first</code>, on y amène chaque élément du suffixe par un échange, on descend, puis on refait l'échange pour restaurer le tableau.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def permute(self, nums: list[int]) -&gt; list[list[int]]:
+        res = []
+        def backtrack(first):
+            if first == len(nums):
+                res.append(nums[:])
+                return
+            for i in range(first, len(nums)):
+                nums[first], nums[i] = nums[i], nums[first]
+                backtrack(first + 1)
+                nums[first], nums[i] = nums[i], nums[first]
+        backtrack(0)
+        return res</code></pre>
+
+                <p>Elle évite la boucle sur des indices déjà utilisés (à la profondeur <code>k</code>, la solution 1 parcourt encore les <code>n</code> indices, dont <code>k</code> sont pris). Les deux versions renvoient exactement les <code>n!</code> permutations attendues (comparées à <code>itertools.permutations</code> sur quelques centaines de tableaux aléatoires) ; l'ordre de sortie diffère légèrement.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps et espace de sortie <code>O(n · n!)</code> : <code>n!</code> permutations de longueur <code>n</code> à copier, ce qui est optimal. Espace auxiliaire <code>O(n)</code> (pile de récursion, plus <code>used</code> et <code>path</code> pour la solution 1).</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Subsets : on choisit <em>si</em> on prend chaque élément (<code>start</code> croissant). Permutations : on choisit <em>quel</em> élément vient ensuite (tous les indices libres).</li>
+                    <li>Marquer les éléments utilisés avec un tableau <code>used</code>, ou les tenir dans un suffixe par échanges.</li>
+                    <li>Variante à connaître : Permutations II (<a href="https://leetcode.com/problems/permutations-ii/" target="_blank" rel="noopener noreferrer">#47</a>), avec doublons : trier, puis sauter <code>nums[i]</code> si <code>nums[i] == nums[i − 1]</code> et que <code>nums[i − 1]</code> n'est pas utilisé.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="subsets">
+                <h2>Subsets</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/subsets/" target="_blank" rel="noopener noreferrer">#78 · Medium ↗</a>
+                    <span class="chip">récursion</span>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donné un tableau <code>nums</code> d'entiers <strong>distincts</strong>, renvoyer tous ses sous-ensembles (l'ensemble des parties), dans n'importe quel ordre. Pour <code>[1, 2, 3]</code>, il y en a <code>2³ = 8</code>, de <code>[]</code> à <code>[1, 2, 3]</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>Chaque élément est soit <strong>pris</strong>, soit <strong>laissé</strong> : deux choix indépendants par élément, d'où <code>2<sup>n</sup></code> sous-ensembles. Les trois solutions ci-dessous sont trois façons de parcourir cet arbre de choix binaires.</p>
+
+                <h3>Solution 1 : récursion sur la queue de la liste</h3>
+                <p>Ma version : les sous-ensembles de <code>l</code> sont ceux de <code>l[1:]</code>, plus chacun d'eux complété par <code>l[0]</code>. Elle construit le résultat en remontant, sans état partagé à annuler.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def subsets(self, nums: list[int]) -&gt; list[list[int]]:
+        def aux(l):
+            if len(l) == 0:
+                return [[]]
+            if len(l) == 1:
+                return [[],l]
+            else:
+                res = []
+                rec = aux(l[1:])
+                for sub in rec:
+                    res.append(sub)
+                    res.append([l[0]] + sub)
+                return res
+        res = aux(nums)
+        return res</code></pre>
+
+                <p>J'ai retiré un <code>print</code> de débogage qui affichait chaque appel récursif : sur LeetCode, il ralentit fortement la soumission. Le cas <code>len(l) == 1</code> est redondant, puisque le cas de base <code>[[]]</code> suffit à le produire. Enfin, chaque <code>l[1:]</code> recopie la liste, ce qui reste négligeable devant la taille de la sortie.</p>
+
+                <h3>Solution 2 (plus usuelle en entretien) : backtracking</h3>
+                <p>Le patron que l'on retrouve dans Permutations, Combination Sum ou Palindrome Partitioning : chaque nœud de l'arbre <em>est</em> un sous-ensemble, on l'ajoute au résultat dès qu'on l'atteint, puis on essaie d'ajouter chaque élément suivant (indices croissants pour ne jamais produire deux fois le même ensemble).</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def subsets(self, nums: list[int]) -&gt; list[list[int]]:
+        res, path = [], []
+        def backtrack(start):
+            res.append(path[:])
+            for i in range(start, len(nums)):
+                path.append(nums[i])
+                backtrack(i + 1)
+                path.pop()
+        backtrack(0)
+        return res</code></pre>
+
+                <h3>Solution 3 : construction itérative</h3>
+                <p>Même idée que la solution 1, mais sans récursion : on part de <code>[[]]</code> et, pour chaque élément, on double la liste en ajoutant une copie de chaque sous-ensemble existant complétée par cet élément.</p>
+
+                <p class="code-label">solution_3.py</p>
+                <pre><code class="language-python">class Solution:
+    def subsets(self, nums: list[int]) -&gt; list[list[int]]:
+        res = [[]]
+        for x in nums:
+            res += [sub + [x] for sub in res]
+        return res</code></pre>
+
+                <p>Les trois versions renvoient exactement les <code>2<sup>n</sup></code> sous-ensembles attendus (comparés à <code>itertools.combinations</code> sur quelques centaines de tableaux aléatoires) ; seul l'ordre diffère.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps et espace de sortie <code>O(n · 2<sup>n</sup>)</code> pour les trois : il y a <code>2<sup>n</sup></code> sous-ensembles de taille moyenne <code>n / 2</code>, à construire un par un. Aucune solution ne peut faire mieux, puisque c'est la taille de la réponse. Pile de récursion <code>O(n)</code> pour les solutions 1 et 2.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>« Tous les sous-ensembles » : <code>2<sup>n</sup></code> résultats, une décision binaire par élément.</li>
+                    <li>Le backtracking avec <code>start</code> croissant évite les doublons sans avoir à les filtrer.</li>
+                    <li>Penser à retirer les <code>print</code> de débogage avant de soumettre.</li>
+                    <li>Variante à connaître : Subsets II (<a href="https://leetcode.com/problems/subsets-ii/" target="_blank" rel="noopener noreferrer">#90</a>), avec doublons dans <code>nums</code> : trier, puis sauter <code>nums[i] == nums[i − 1]</code> quand <code>i &gt; start</code>.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="unique-paths">
+                <h2>Unique Paths</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/unique-paths/" target="_blank" rel="noopener noreferrer">#62 · Medium ↗</a>
+                    <span class="chip">programmation dynamique</span>
+                    <span class="chip">combinatoire</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Un robot part du coin haut-gauche d'une grille <code>m × n</code> et doit atteindre le coin bas-droit en ne se déplaçant que vers la <strong>droite</strong> ou vers le <strong>bas</strong>. Combien de chemins distincts existe-t-il ?</p>
+
+                <h3>L'idée clé</h3>
+                <p>On ne peut arriver sur la case <code>(i, j)</code> que depuis celle du dessus ou celle de gauche. Le nombre de chemins vers <code>(i, j)</code> est donc la somme des deux : <code>dp[i][j] = dp[i−1][j] + dp[i][j−1]</code>. La première ligne et la première colonne valent <code>1</code> : il n'y a qu'une façon de les atteindre (tout droit).</p>
+
+                <div class="boards" id="up-example"></div>
+
+                <h3>Solution 1 : table DP 2D</h3>
+                <p>Ma version, qui est aussi la formulation de référence : initialiser les bords à <code>1</code>, puis remplir la table ligne par ligne.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def uniquePaths(self, m: int, n: int) -&gt; int:
+        dp = [[0]*n for _ in range(m)]
+        for i in range(n):
+            dp[0][i] = 1
+        for i in range(m):
+            dp[i][0] = 1
+
+        for i in range(1,m):
+            for j in range(1,n):
+                dp[i][j] = dp[i-1][j] + dp[i][j-1]
+
+        return dp[m-1][n-1]</code></pre>
+
+                <h3>Solution 2 : une seule ligne, espace <code>O(n)</code></h3>
+                <p>Chaque ligne ne dépend que de la précédente. En gardant une seule ligne <code>row</code>, au moment de calculer <code>row[j]</code>, elle contient encore l'ancienne valeur (celle du dessus) et <code>row[j − 1]</code> vient d'être mise à jour (celle de gauche) : il suffit de faire <code>row[j] += row[j − 1]</code>.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def uniquePaths(self, m: int, n: int) -&gt; int:
+        row = [1] * n
+        for _ in range(1, m):
+            for j in range(1, n):
+                row[j] += row[j - 1]
+        return row[-1]</code></pre>
+
+                <h3>Solution 3 : formule combinatoire</h3>
+                <p>Tout chemin fait exactement <code>m − 1</code> pas vers le bas et <code>n − 1</code> pas vers la droite, soit <code>m + n − 2</code> pas au total. Un chemin est entièrement déterminé par le choix des positions des pas « bas » parmi ces <code>m + n − 2</code> : la réponse est le coefficient binomial <code>C(m + n − 2, m − 1)</code>.</p>
+
+                <p class="code-label">solution_3.py</p>
+                <pre><code class="language-python">from math import comb
+
+class Solution:
+    def uniquePaths(self, m: int, n: int) -&gt; int:
+        return comb(m + n - 2, m - 1)</code></pre>
+
+                <p>Les trois solutions donnent le même résultat pour toutes les grilles jusqu'à <code>14 × 14</code> (et sur <code>100 × 100</code>). La table DP n'est d'ailleurs rien d'autre que le triangle de Pascal penché.</p>
+
+                <h3>Complexité</h3>
+                <div class="table-wrap">
+                    <table class="complexity">
+                        <thead>
+                            <tr><th>Solution</th><th>Temps</th><th>Espace</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1 · DP 2D</td><td><code>O(m · n)</code></td><td><code>O(m · n)</code></td></tr>
+                            <tr><td>2 · une ligne</td><td><code>O(m · n)</code></td><td><code>O(n)</code></td></tr>
+                            <tr><td>3 · combinatoire</td><td><code>O(min(m, n))</code> multiplications</td><td><code>O(1)</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Compter des chemins dans une grille : <code>dp[i][j]</code> = somme des cases depuis lesquelles on peut arriver.</li>
+                    <li>Quand une ligne ne dépend que de la précédente, passer d'une table 2D à une seule ligne.</li>
+                    <li>Si la question ne porte que sur un dénombrement sans obstacles, chercher une formule fermée. En entretien, présenter d'abord la DP puis mentionner la formule.</li>
+                    <li>Variante à connaître : Unique Paths II (<a href="https://leetcode.com/problems/unique-paths-ii/" target="_blank" rel="noopener noreferrer">#63</a>), avec obstacles, où une case bloquée vaut <code>0</code> et la formule ne s'applique plus.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="palindrome-partitioning">
+                <h2>Palindrome Partitioning</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/palindrome-partitioning/" target="_blank" rel="noopener noreferrer">#131 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">programmation dynamique</span>
+                    <span class="chip">chaînes</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Découper une chaîne <code>s</code> en morceaux consécutifs qui soient <strong>tous des palindromes</strong>, et renvoyer toutes les découpes possibles. Pour <code>"aab"</code> : <code>[["a","a","b"], ["aa","b"]]</code>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>On construit la découpe de gauche à droite. Depuis la position <code>start</code>, on essaie chaque préfixe <code>s[start:i+1]</code> ; s'il est palindrome, on le garde et on découpe récursivement la suite à partir de <code>i + 1</code>. Quand <code>start</code> atteint la fin de la chaîne, la découpe courante est complète. Les préfixes non palindromes coupent la branche immédiatement.</p>
+
+                <pre><code class="language-plaintext">"aab"
+├─ "a"   reste "ab"
+│   ├─ "a"   reste "b"
+│   │   └─ "b"   → ["a", "a", "b"] ✓
+│   └─ "ab"  ✗ pas un palindrome
+├─ "aa"  reste "b"
+│   └─ "b"   → ["aa", "b"] ✓
+└─ "aab" ✗ pas un palindrome</code></pre>
+
+                <h3>Solution 1 : backtracking avec test par inversion</h3>
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def partition(self, s: str) -&gt; list[list[str]]:
+        res = []
+        def backtrack(start, partition, length):
+            if length == len(s):
+                res.append(list(partition))
+            for i in range(start, len(s)):
+                cand = s[start:i+1]
+                if cand == cand[::-1]:
+                    partition.append(cand)
+                    length+=i+1-start
+                    backtrack(i+1, partition, length)
+                    partition.pop()
+                    length-=i+1-start
+        backtrack(0, [], 0)
+        return res</code></pre>
+
+                <p>Correcte. Deux remarques : <code>length</code> vaut toujours exactement <code>start</code> (les morceaux couvrent <code>s[0:start]</code>), on peut donc s'en passer et tester <code>start == len(s)</code>. Et la copie <code>list(partition)</code> est indispensable : sans elle, <code>res</code> contiendrait plusieurs références vers la même liste, vidée à la fin par les <code>pop()</code>.</p>
+
+                <h3>Solution 2 (plus usuelle) : palindromes précalculés</h3>
+                <p>Le test <code>cand == cand[::-1]</code> coûte <code>O(n)</code> et est refait pour les mêmes sous-chaînes dans de nombreuses branches. La version classique précalcule une table <code>is_pal[i][j]</code> par programmation dynamique : <code>s[i..j]</code> est un palindrome si ses extrémités sont égales et que l'intérieur <code>s[i+1..j-1]</code> en est un. Chaque test devient alors un lookup en <code>O(1)</code>.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def partition(self, s: str) -&gt; list[list[str]]:
+        n = len(s)
+        is_pal = [[False] * n for _ in range(n)]
+        for i in range(n - 1, -1, -1):
+            for j in range(i, n):
+                is_pal[i][j] = s[i] == s[j] and (j - i &lt; 2 or is_pal[i + 1][j - 1])
+        res, path = [], []
+        def backtrack(start):
+            if start == n:
+                res.append(path[:])
+                return
+            for end in range(start, n):
+                if is_pal[start][end]:
+                    path.append(s[start:end + 1])
+                    backtrack(end + 1)
+                    path.pop()
+        backtrack(0)
+        return res</code></pre>
+
+                <p><code>i</code> est parcouru à l'envers pour que <code>is_pal[i + 1][j - 1]</code> soit déjà calculé. Les deux solutions renvoient les mêmes découpes qu'une énumération brute-force des <code>2<sup>n−1</sup></code> découpes possibles, sur quelques milliers de chaînes aléatoires.</p>
+
+                <h3>Complexité</h3>
+                <p>Il y a jusqu'à <code>2<sup>n−1</sup></code> découpes valides (cas <code>"aaaa…"</code>), chacune copiée en <code>O(n)</code> : temps <code>O(n · 2<sup>n</sup>)</code> dans le pire cas pour les deux solutions. La solution 2 ajoute <code>O(n²)</code> de précalcul (temps et espace) mais rend chaque test de palindrome constant. Pile de récursion : <code>O(n)</code>.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>« Toutes les découpes / combinaisons » : backtracking sur la position de départ.</li>
+                    <li>Toujours ajouter une <strong>copie</strong> du chemin courant au résultat.</li>
+                    <li>Quand le même sous-problème (« <code>s[i..j]</code> est-il un palindrome ? ») revient dans plusieurs branches, le précalculer.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="word-search">
+                <h2>Word Search</h2>
+                <div class="entry-meta">
+                    <span class="chip">16 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/word-search/" target="_blank" rel="noopener noreferrer">#79 · Medium ↗</a>
+                    <span class="chip">backtracking</span>
+                    <span class="chip">dfs</span>
+                    <span class="chip">matrice</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Étant donnée une grille de lettres <code>m × n</code> et un mot, dire si le mot peut être formé en reliant des cases <strong>adjacentes</strong> (haut, bas, gauche, droite), sans réutiliser deux fois la même case.</p>
+
+                <div class="boards" id="ws-example"></div>
+
+                <h3>L'idée clé</h3>
+                <p>On essaie chaque case comme point de départ, puis on prolonge le chemin lettre par lettre par un parcours en <strong>profondeur</strong> (DFS) : à l'étape <code>k</code>, on cherche parmi les 4 voisins une case non utilisée qui porte <code>word[k]</code>. On marque la case avant de descendre et on la libère en remontant : c'est le même patron <em>choisir → explorer → annuler</em> que pour N-Queens.</p>
+
+                <h3>Solution 1 : matrice <code>used</code> et exploration des voisins</h3>
+                <p>Ma version : une matrice <code>used</code> mémorise les cases du chemin courant, et la fonction récursive regarde les voisins de la case courante avant d'y descendre.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def exist(self, board: list[list[str]], word: str) -&gt; bool:
+        m, n = len(board), len(board[0])
+        direction = [(-1,0), (1,0), (0, -1), (0,1)]
+        used = [[0]*n for _ in range(m)]
+        def bfs(i,j, k, used):
+            if k == len(word):
+                return True
+            for d1, d2 in direction:
+                if 0&lt;= i+d1 &lt; m and 0&lt;= j+d2 &lt; n:
+                    if not used[i+d1][j+d2]:
+                        if board[i+d1][j+d2] == word[k]:
+                            used[i+d1][j+d2] = 1
+                            res = bfs(i+d1, j+d2, k+1, used)
+                            used[i+d1][j+d2] = 0
+                            if res:
+                                return True
+            return False
+
+        for i in range(m):
+            for j in range(n):
+                if board[i][j] == word[0]:
+                    used[i][j] = 1
+                    res = bfs(i,j, 1, used)
+                    if res:
+                        return True
+                    used[i][j] = 0
+        return False</code></pre>
+
+                <p><strong>Correction :</strong> ma première version appelait <code>bfs(i, j, [board[i][j]], used)</code>, c'est-à-dire avec une <em>liste</em> comme indice <code>k</code>, ce qui lève un <code>TypeError</code> dès que <code>word[k]</code> est évalué. La première lettre étant déjà vérifiée, la recherche doit reprendre à l'indice <code>k = 1</code>. Autre remarque : malgré son nom, <code>bfs</code> fait un parcours en profondeur (DFS), pas en largeur.</p>
+
+                <h3>Solution 2 (plus usuelle) : marquage en place dans la grille</h3>
+                <p>Variante courante : vérifier la case <em>à l'entrée</em> de l'appel récursif plutôt que ses voisins, et marquer la case visitée directement dans <code>board</code> en remplaçant temporairement sa lettre par <code>'#'</code>. Plus besoin de matrice <code>used</code>, ni de traiter la première lettre à part.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def exist(self, board: list[list[str]], word: str) -&gt; bool:
+        m, n = len(board), len(board[0])
+        def dfs(i, j, k):
+            if k == len(word):
+                return True
+            if not (0 &lt;= i &lt; m and 0 &lt;= j &lt; n) or board[i][j] != word[k]:
+                return False
+            tmp, board[i][j] = board[i][j], '#'
+            found = (dfs(i + 1, j, k + 1) or dfs(i - 1, j, k + 1)
+                     or dfs(i, j + 1, k + 1) or dfs(i, j - 1, k + 1))
+            board[i][j] = tmp
+            return found
+        return any(dfs(i, j, 0) for i in range(m) for j in range(n))</code></pre>
+
+                <p>Les deux versions donnent les mêmes résultats qu'une recherche brute-force sur quelques milliers de grilles aléatoires. La seconde modifie la grille d'entrée pendant la recherche mais la restaure toujours avant de rendre la main.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(m · n · 3<sup>L</sup>)</code> avec <code>L = len(word)</code> : chaque case peut être un départ, puis chaque étape a au plus 3 voisins nouveaux (on ne revient pas sur la case d'où l'on vient). Espace <code>O(L)</code> pour la pile de récursion, plus <code>O(m · n)</code> pour <code>used</code> dans la solution 1.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Chemin dans une grille sans répétition de case : DFS + backtracking, pas BFS (le BFS ne sait pas « dé-visiter » une case propre à un chemin).</li>
+                    <li>Marquer en place (<code>'#'</code>) puis restaurer évite une structure auxiliaire.</li>
+                    <li>Tester la validité à l'entrée de la récursion simplifie le code (bornes, lettre et visite au même endroit).</li>
+                    <li>Élagages utiles en pratique : abandonner si le mot est plus long que <code>m · n</code>, ou si une lettre y apparaît plus souvent que dans la grille.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="maximal-square">
+                <h2>Maximal Square</h2>
+                <div class="entry-meta">
+                    <span class="chip">15 Oct 2026</span>
+                    <a class="chip medium" href="https://leetcode.com/problems/maximal-square/" target="_blank" rel="noopener noreferrer">#221 · Medium ↗</a>
+                    <span class="chip">programmation dynamique</span>
+                    <span class="chip">matrice</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Dans une matrice binaire <code>m × n</code> remplie de <code>"0"</code> et de <code>"1"</code>, trouver le plus grand carré ne contenant que des <code>1</code> et renvoyer son <strong>aire</strong>.</p>
+
+                <h3>L'idée clé</h3>
+                <p>On note <code>dp[i][j]</code> le côté du plus grand carré de <code>1</code> ancré en <code>(i, j)</code>. Un carré de côté <code>k</code> ancré en <code>(i, j)</code> existe si et seulement si la case vaut <code>1</code> et ses trois voisines (dans la direction opposée à l'ancre) portent chacune un carré de côté au moins <code>k − 1</code>. Le plus petit des trois limite donc la taille :</p>
+                <p><code>dp[i][j] = 1 + min(voisin vertical, voisin horizontal, voisin diagonal)</code> si <code>matrix[i][j] == "1"</code>, sinon <code>0</code>.</p>
+                <p>La réponse est <code>max(dp)²</code>. Ci-dessous l'exemple 1 de LeetCode, avec la table <code>dp</code> de la solution 2 (ancre en bas à droite) : le maximum vaut 2, d'où une aire de 4.</p>
+
+                <div class="boards" id="ms-example"></div>
+
+                <h3>Solution 1 : ancre en haut à gauche, parcours depuis le coin bas-droit</h3>
+                <p>Ma version : <code>dp[j][i]</code> est le côté du plus grand carré dont <code>(j, i)</code> est le coin <strong>haut-gauche</strong>. Il dépend donc des cases du dessous, de droite et en diagonale bas-droite, d'où un parcours qui part du coin bas-droit. La dernière ligne et la dernière colonne sont initialisées à part, car elles n'ont pas de voisins de ce côté.</p>
+
+                <p class="code-label">solution_1.py</p>
+                <pre><code class="language-python">class Solution:
+    def maximalSquare(self, matrix: list[list[str]]) -&gt; int:
+        m,n = len(matrix), len(matrix[0])
+        dp = [[0]*n for _ in range(m)]
+        maxi = 0
+        for i in range(n):
+            dp[m-1][i] = int(matrix[m-1][i])
+            if maxi &lt; dp[m-1][i]:
+                maxi = dp[m-1][i]
+        for i in range(m):
+            dp[i][n-1] = int(matrix[i][n-1])
+            if maxi &lt; dp[i][n-1]:
+                maxi = dp[i][n-1]
+        for i in range(n-2, -1, -1):
+            for j in range(m-2, -1, -1):
+                dp[j][i] = int(matrix[j][i])*(min(dp[j+1][i], dp[j][i+1], dp[j+1][i+1]) + 1)
+                if maxi &lt; dp[j][i]:
+                    maxi = dp[j][i]
+        return maxi**2</code></pre>
+
+                <p>Le produit <code>int(matrix[j][i]) * (…)</code> remplace élégamment le <code>if</code> : une case à <code>0</code> annule le résultat. Attention à l'ordre des indices : la boucle externe porte sur les colonnes (<code>i</code>) et l'interne sur les lignes (<code>j</code>), ce qui est correct mais inhabituel à relire.</p>
+
+                <h3>Solution 2 (plus usuelle) : ancre en bas à droite, avec bordure de zéros</h3>
+                <p>La formulation la plus courante prend <code>(i, j)</code> comme coin <strong>bas-droit</strong> du carré : on dépend alors des cases du haut, de gauche et en diagonale haut-gauche, et on parcourt la matrice dans l'ordre naturel. En allouant une table <code>(m + 1) × (n + 1)</code>, la ligne 0 et la colonne 0 servent de bordure de zéros : plus besoin d'initialiser la première ligne et la première colonne à part.</p>
+
+                <p class="code-label">solution_2.py</p>
+                <pre><code class="language-python">class Solution:
+    def maximalSquare(self, matrix: list[list[str]]) -&gt; int:
+        m, n = len(matrix), len(matrix[0])
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+        side = 0
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if matrix[i - 1][j - 1] == '1':
+                    dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+                    side = max(side, dp[i][j])
+        return side * side</code></pre>
+
+                <p>Les deux solutions sont équivalentes (vérifiées contre une recherche brute-force sur quelques milliers de matrices aléatoires) ; la seconde est simplement plus courte et sans cas particuliers.</p>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(m · n)</code> pour les deux : chaque case est calculée une fois, en <code>O(1)</code>. Espace <code>O(m · n)</code> pour la table <code>dp</code>. Comme <code>dp[i][j]</code> ne dépend que de la ligne courante et de la précédente, on peut ne garder qu'une ligne et descendre à <code>O(n)</code>.</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Grille + « plus grand carré / chemin / rectangle » : chercher une récurrence sur les voisins déjà calculés.</li>
+                    <li>Le <code>min</code> des trois voisins : le carré est limité par son voisin le plus « faible ».</li>
+                    <li>Une bordure de zéros (table de taille <code>(m + 1) × (n + 1)</code>) supprime les initialisations spéciales.</li>
+                    <li>Renvoyer l'<strong>aire</strong>, pas le côté.</li>
+                </ul>
+            </section>
+
+            <hr class="separator">
+
+            <section id="valid-parentheses">
+                <h2>Valid Parentheses</h2>
+                <div class="entry-meta">
+                    <span class="chip">15 Oct 2026</span>
+                    <a class="chip easy" href="https://leetcode.com/problems/valid-parentheses/" target="_blank" rel="noopener noreferrer">#20 · Easy ↗</a>
+                    <span class="chip">pile</span>
+                    <span class="chip">hashmap</span>
+                    <span class="chip">python</span>
+                </div>
+
+                <h3>Le problème</h3>
+                <p>Une chaîne ne contient que les caractères <code>()[]{}</code>. Elle est valide si chaque ouvrante est fermée par une fermante <strong>du même type</strong>, et <strong>dans le bon ordre</strong> : <code>"{[]}()"</code> est valide, <code>"([)]"</code> ne l'est pas.</p>
+
+                <h3>L'idée clé</h3>
+                <p>La dernière parenthèse ouverte est la première qui doit être fermée : c'est exactement le comportement d'une <strong>pile</strong> (LIFO). On empile chaque ouvrante ; à chaque fermante, le sommet de la pile doit être l'ouvrante correspondante, qu'on dépile alors. Un dictionnaire <code>fermante → ouvrante</code> rend la correspondance immédiate.</p>
+
+                <p class="code-label">solution.py</p>
+                <pre><code class="language-python">class Solution:
+    def isValid(self, s: str) -&gt; bool:
+        queue = []
+        d = {')':'(', '}':'{', ']':'['}
+        for char in s:
+            if char in d:
+                if not queue:
+                    return False
+                if d[char] != queue[-1]:
+                    return False
+                queue.pop()
+            else:
+                queue.append(char)
+        return not queue</code></pre>
+
+                <p>Malgré son nom, <code>queue</code> est bien utilisée comme une pile : <code>append</code> et <code>pop</code> agissent tous deux sur la fin de la liste, en <code>O(1)</code>. Trois cas mènent à <code>False</code> : une fermante alors que la pile est vide (<code>")("</code>), une fermante du mauvais type (<code>"(]"</code>), et des ouvrantes restées sans partenaire à la fin (<code>"(("</code>), d'où le <code>return not queue</code>.</p>
+
+                <p>Déroulé sur <code>"([)]"</code> :</p>
+                <div class="table-wrap">
+                    <table class="trace">
+                        <thead><tr><th>caractère</th><th>action</th><th>pile après</th></tr></thead>
+                        <tbody>
+                            <tr><td>(</td><td>ouvrante → empiler</td><td>[ ( ]</td></tr>
+                            <tr><td>[</td><td>ouvrante → empiler</td><td>[ ( [ ]</td></tr>
+                            <tr><td>)</td><td>attend <code>(</code>, sommet = <code>[</code></td><td>→ False</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Complexité</h3>
+                <p>Temps <code>O(n)</code> : un seul passage, chaque caractère est empilé et dépilé au plus une fois. Espace <code>O(n)</code> dans le pire cas (que des ouvrantes).</p>
+
+                <h3>À retenir</h3>
+                <ul>
+                    <li>Structure imbriquée, « le dernier ouvert est le premier fermé » : penser pile.</li>
+                    <li>Un dictionnaire indexé par la fermante évite une cascade de <code>if</code>.</li>
+                    <li>Petite optimisation possible : une chaîne de longueur impaire ne peut jamais être valide.</li>
+                </ul>
+            </section>
 
             <hr class="separator">
 
@@ -308,16 +1233,20 @@
         hljs.highlightAll();
 
         // Petits échiquiers d'illustration : chaque case reçoit un libellé via label(r, c)
-        function board(n, label, caption) {
+        // Par défaut n × n en damier ; opts.cols et opts.shade(r, c) -> classe pour les matrices
+        function board(n, label, caption, opts = {}) {
+            const cols = opts.cols ?? n;
+            const shade = opts.shade ?? ((r, c) => (r + c) % 2 ? 'dark' : null);
             const fig = document.createElement('figure');
             const grid = document.createElement('div');
             grid.className = 'board';
-            grid.style.setProperty('--n', n);
+            grid.style.setProperty('--n', cols);
             for (let r = 0; r < n; r++) {
-                for (let c = 0; c < n; c++) {
+                for (let c = 0; c < cols; c++) {
                     const cell = document.createElement('span');
                     const text = label(r, c);
-                    if ((r + c) % 2) cell.classList.add('dark');
+                    const cls = shade(r, c);
+                    if (cls) cell.classList.add(cls);
                     if (text === '♛') cell.classList.add('queen');
                     cell.textContent = text;
                     grid.appendChild(cell);
@@ -335,6 +1264,27 @@
                 board(4, (r, c) => rows[r][c] === 'Q' ? '♛' : '', `n = 4 · solution ${k + 1}/2`)
             );
         });
+
+        // Unique Paths : table dp pour m = 3, n = 7
+        const upDp = [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 10, 15, 21, 28]];
+        document.getElementById('up-example').appendChild(board(3, (r, c) => String(upDp[r][c]), 'm = 3, n = 7 · dp[2][6] = 28',
+            { cols: 7, shade: (r, c) => r === 2 && c === 6 ? 'hit' : (r === 0 || c === 0) ? 'zero' : null }));
+
+        // Word Search : exemple 1 de LeetCode, chemin de "ABCCED" surligné
+        const ws = ['ABCE', 'SFCS', 'ADEE'];
+        const wsPath = ['0,0', '0,1', '0,2', '1,2', '2,2', '2,1'];
+        document.getElementById('ws-example').appendChild(board(3, (r, c) => ws[r][c], 'word = "ABCCED" → true',
+            { cols: 4, shade: (r, c) => wsPath.includes(`${r},${c}`) ? 'hit' : null }));
+
+        // Maximal Square : matrice de l'exemple 1 et table dp (convention coin bas-droit)
+        const ms = ['10100', '10111', '11111', '10010'];
+        const msDp = [[1, 0, 1, 0, 0], [1, 0, 1, 1, 1], [1, 1, 1, 2, 2], [1, 0, 0, 1, 0]];
+        const inSquare = (r, c) => r >= 1 && r <= 2 && c >= 3 && c <= 4;
+        const msFig = document.getElementById('ms-example');
+        msFig.appendChild(board(4, (r, c) => ms[r][c], 'matrix · plus grand carré = 2 × 2',
+            { cols: 5, shade: (r, c) => inSquare(r, c) ? 'hit' : ms[r][c] === '0' ? 'zero' : null }));
+        msFig.appendChild(board(4, (r, c) => String(msDp[r][c]), 'dp[i][j] · côté max finissant en (i, j)',
+            { cols: 5, shade: (r, c) => msDp[r][c] === 2 ? 'hit' : msDp[r][c] === 0 ? 'zero' : null }));
 
         const diagonals = document.getElementById('nq-diagonals');
         diagonals.appendChild(board(4, (r, c) => String(r - c), 'line − i  (diagonale \\)'));

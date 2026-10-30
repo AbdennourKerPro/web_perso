@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-    <link rel="stylesheet" href="minimal.css?v=20261008a">
+    <link rel="stylesheet" href="minimal.css?v=20261030a">
 </head>
 <body>
     <nav class="jump-nav" aria-label="Sections">
@@ -48,7 +48,7 @@
                 <p>Paris, France</p>
                 <p>Research Engineer</p>
                 <p class="identity-line">[ vision researcher <span>·</span> humanist <span>·</span> gamer / reader <span>·</span> optimist ]</p>
-                <p class="contact-line"><span class="contact-item"><a href="mailto:contact@abdennour.tech">contact@abdennour.tech</a><button class="copy-email" type="button" data-copy="contact@abdennour.tech" aria-label="Copier l'adresse contact@abdennour.tech">copier</button></span><span>|</span><span class="contact-item"><a href="mailto:abdennour.kerboua.pro@gmail.com">abdennour.kerboua.pro@gmail.com</a><button class="copy-email" type="button" data-copy="abdennour.kerboua.pro@gmail.com" aria-label="Copier l'adresse abdennour.kerboua.pro@gmail.com">copier</button></span><span>|</span><a href="assets/cv.pdf" download="CV_Abdennour_Kerboua.pdf">résumé ↗</a></p>
+                <p class="contact-line"><span class="contact-item"><a href="mailto:contact@abdennour.tech">contact@abdennour.tech</a><button class="copy-email" type="button" data-copy="contact@abdennour.tech" aria-label="Copier l'adresse contact@abdennour.tech">copier</button></span><span>|</span><span class="contact-item"><a href="mailto:abdennour.kerboua.pro@gmail.com">abdennour.kerboua.pro@gmail.com</a><button class="copy-email" type="button" data-copy="abdennour.kerboua.pro@gmail.com" aria-label="Copier l'adresse abdennour.kerboua.pro@gmail.com">copier</button></span><span>|</span><a href="assets/cv.pdf" id="resume-trigger" aria-haspopup="dialog" aria-controls="resume-dialog">résumé ↗</a></p>
             </div>
         </header>
 
@@ -308,6 +308,25 @@
         <a class="modal-link" href="https://github.com/AbdennourKerPro/Smart-Remote-Car-with-Automatic-QR-Code-Navigation" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </dialog>
 
-    <script src="site.js?v=20261008a"></script>
+    <dialog class="resume-modal" id="resume-dialog" aria-labelledby="resume-title">
+        <header class="resume-header">
+            <div>
+                <p class="modal-kicker">CURRICULUM VITAE</p>
+                <h2 id="resume-title">Abdennour Kerboua</h2>
+            </div>
+            <button class="modal-close" type="button" aria-label="Fermer le CV" autofocus>×</button>
+        </header>
+        <div class="resume-preview">
+            <object type="application/pdf" aria-label="Aperçu du CV d’Abdennour Kerboua">
+                <p>L’aperçu n’est pas disponible sur ce navigateur. Vous pouvez ouvrir ou télécharger le CV ci-dessous.</p>
+            </object>
+        </div>
+        <footer class="resume-footer">
+            <a class="resume-open" href="assets/cv.pdf" target="_blank" rel="noopener">Ouvrir le PDF ↗</a>
+            <a class="resume-download" href="assets/cv.pdf" download="CV_Abdennour_Kerboua.pdf"><span aria-hidden="true">↓</span> Télécharger le CV <small>PDF</small></a>
+        </footer>
+    </dialog>
+
+    <script src="site.js?v=20261030a"></script>
 </body>
 </html>

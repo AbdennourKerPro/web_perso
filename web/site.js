@@ -185,7 +185,32 @@
         });
     }
 
-    // Copy the main contact address
+    // CV preview: keep the PDF link usable when modal dialogs are unavailable.
+    const resumeTrigger = document.getElementById("resume-trigger");
+    const resumeDialog = document.getElementById("resume-dialog");
+    if (resumeTrigger && resumeDialog && typeof resumeDialog.showModal === "function") {
+        resumeTrigger.addEventListener("click", event => {
+            if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            const preview = resumeDialog.querySelector("object");
+            if (!preview.hasAttribute("data")) preview.setAttribute("data", `${resumeTrigger.getAttribute("href")}#view=FitH`);
+            resumeDialog.showModal();
+            document.body.classList.add("resume-is-open");
+        });
+        resumeDialog.querySelector(".modal-close").addEventListener("click", () => resumeDialog.close());
+        resumeDialog.addEventListener("click", event => {
+            if (event.target !== resumeDialog) return;
+            const box = resumeDialog.getBoundingClientRect();
+            if (event.clientX < box.left || event.clientX > box.right
+                || event.clientY < box.top || event.clientY > box.bottom) resumeDialog.close();
+        });
+        resumeDialog.addEventListener("close", () => {
+            document.body.classList.remove("resume-is-open");
+            resumeTrigger.focus({ preventScroll: true });
+        });
+    }
+
+    // Copy contact addresses
     document.querySelectorAll(".copy-email").forEach(button => {
         const label = button.textContent;
         let timer;

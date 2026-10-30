@@ -340,6 +340,64 @@ button:focus-visible {
 
 .project-modal::backdrop { background: var(--backdrop); }
 
+body.resume-is-open { overflow: hidden; }
+
+.resume-modal {
+    width: min(960px, calc(100% - 2rem));
+    height: min(900px, calc(100dvh - 2rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 24px 80px var(--shadow);
+}
+
+.resume-modal[open] { display: flex; flex-direction: column; }
+.resume-modal::backdrop { background: var(--backdrop); backdrop-filter: blur(5px); }
+.resume-header, .resume-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.4rem;
+    flex-shrink: 0;
+}
+.resume-header { border-bottom: 1px solid var(--line); }
+.resume-header h2 { margin: 0; font-size: 1.1rem; font-weight: 500; }
+.resume-header .modal-kicker { margin-bottom: 0.25rem; }
+.resume-preview { flex: 1; min-height: 0; background: var(--paper); }
+.resume-preview object { display: block; width: 100%; height: 100%; border: 0; }
+.resume-preview p { padding: 1.5rem; color: var(--muted); }
+.resume-footer { border-top: 1px solid var(--line); }
+.resume-open { color: var(--muted); font-size: 0.8rem; text-underline-offset: 4px; }
+.resume-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--olive);
+    border-radius: 7px;
+    background: var(--ink);
+    color: var(--surface);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 150ms, color 150ms;
+}
+.resume-download:hover { background: var(--olive); }
+.resume-download small { font: 0.65rem var(--mono); opacity: 0.75; }
+
+@media (max-width: 520px) {
+    .resume-header, .resume-footer { padding: 1rem; }
+    .resume-footer { flex-direction: column-reverse; gap: 0.75rem; }
+    .resume-download { width: 100%; }
+    .resume-header h2 { font-size: 1rem; }
+}
+
 .modal-close {
     float: right;
     width: 1.5rem;

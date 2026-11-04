@@ -19,4 +19,5 @@ node_modules/
 # (seul web/soutenance/deck.bin, chiffré, est publié)
 /soutenance/
 /interview_html/
+/sia_interview/
 interview_html.zip

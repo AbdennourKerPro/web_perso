@@ -19,6 +19,7 @@ import readline from 'node:readline';
 // Each deck is a pair: source folder -> published folder under web/.
 //   node scripts/encrypt-soutenance.mjs                             soutenance -> web/soutenance
 //   node scripts/encrypt-soutenance.mjs interview_html interview-pres
+//   node scripts/encrypt-soutenance.mjs sia_interview  sia-interview
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const [srcName = 'soutenance', outName = 'soutenance'] = process.argv.slice(2);
 const SRC = join(ROOT, srcName);
